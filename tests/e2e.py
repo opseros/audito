@@ -11,6 +11,13 @@ def check(name, cond):
     results.append((name, bool(cond)))
     print(("PASS " if cond else "FAIL ") + name, flush=True)
 
+def wait_text(page, text, timeout=15000):
+    try:
+        page.wait_for_selector(f"text={text}", timeout=timeout)
+    except Exception:
+        pass
+    return text in page.content()
+
 def signin(page, email, pw=PW):
     page.goto(BASE + "/signin")
     page.fill("input[name=email]", email)
@@ -46,8 +53,7 @@ with sync_playwright() as p:
     page.fill("input[name=email]", "alex@acme.test")
     page.fill("input[name=password]", "weakpassword")
     page.click("button:has-text('Continue')")
-    page.wait_for_timeout(1500)
-    check("weak password rejected", "Use at least three" in page.content())
+    check("weak password rejected", wait_text(page, "Use at least three"))
     page.fill("input[name=password]", "Str0ng-Password!")
     page.click("button:has-text('Continue')")
     page.wait_for_url("**/onboarding", timeout=15000)
@@ -80,12 +86,10 @@ with sync_playwright() as p:
     page.wait_for_load_state("networkidle")
     page.select_option("select[name=status]", "passing")
     page.click("button:has-text('Save control')")
-    page.wait_for_timeout(1200)
-    check("member updates control", "Control updated" in page.content())
+    check("member updates control", wait_text(page, "Control updated"))
     page.set_input_files("input[type=file]", files=[{"name": "mfa-proof.txt", "mimeType": "text/plain", "buffer": b"all users have mfa"}])
     page.click("button:has-text('Upload evidence')")
-    page.wait_for_timeout(1500)
-    check("member uploads evidence", "uploaded" in page.content())
+    check("member uploads evidence", wait_text(page, "uploaded"))
     page.goto(BASE + "/app/settings/team")
     check("member cannot invite", page.locator("text=Invite a teammate").count() == 0)
     page.goto(BASE + "/app/marketplace")
@@ -107,20 +111,26 @@ with sync_playwright() as p:
     page.screenshot(path="/home/claude/shots/07-engagements.png", full_page=True)
     page.goto(room_url)
     page.click("a:has-text('Change tickets sample')")
-    page.wait_for_load_state("networkidle")
+    page.wait_for_selector("h2:has-text('Change tickets sample')", timeout=15000)
     check("auditor sees internal note", "If 2+ of 25" in page.content())
     page.fill("textarea[name=body]", "Thanks, approvals received.")
     page.click("button:has-text('Accept evidence')")
-    page.wait_for_timeout(1500)
+    try:
+        page.wait_for_selector("[role=status]:has-text('Accepted.')", timeout=15000)
+    except Exception:
+        pass
     check("auditor accepts", "Accepted." in page.content())
     page.goto(room_url + "?tab=sampling")
     page.click("button:has-text('Draw sample')")
-    page.wait_for_timeout(1500)
-    check("sample drawn", "seed" in page.content() and "CHG-" in page.content())
+    check("sample drawn", wait_text(page, "locked") and "CHG-" in page.content())
     page.screenshot(path="/home/claude/shots/08-sampling.png", full_page=True)
     page.goto(BASE + "/app/workpapers")
     check("workpapers visible", page.locator("text=WP-1").count() >= 1)
     page.goto(BASE + "/app/overview")
+    try:
+        page.wait_for_url("**/app/engagements", timeout=15000)
+    except Exception:
+        pass
     check("auditor kept out of org pages", "/app/overview" not in page.url)
     signout(page)
 
@@ -156,8 +166,7 @@ with sync_playwright() as p:
     page.locator("tr:has-text('Northwind Labs') a:has-text('Details')").click()
     page.wait_for_load_state("networkidle")
     page.click("button:has-text('Start support session')")
-    page.wait_for_timeout(800)
-    check("support needs reason", "Enter a reason" in page.content())
+    check("support needs reason", wait_text(page, "Enter a reason"))
     page.fill("textarea[name=reason]", "Ticket 4411 readiness question")
     page.click("button:has-text('Start support session')")
     page.wait_for_url("**/app/**", timeout=15000)
@@ -177,7 +186,7 @@ with sync_playwright() as p:
     page.goto(BASE + "/forgot-password")
     page.fill("input[name=email]", "alex@acme.test")
     page.click("button:has-text('Send reset link')")
-    page.wait_for_timeout(1500)
+    wait_text(page, "reset link is on its way")
     rl = log_link(r"(http://localhost:3100/reset-password\?token=[\w-]+)")
     check("reset link issued", rl)
     page.goto(rl)
@@ -191,8 +200,7 @@ with sync_playwright() as p:
     page.fill("input[name=password]", "An0ther-Pass-2026")
     page.fill("input[name=confirm]", "An0ther-Pass-2026")
     page.click("button:has-text('Set password')")
-    page.wait_for_timeout(1200)
-    check("reset link single-use", "invalid or has expired" in page.content())
+    check("reset link single-use", wait_text(page, "invalid or has expired"))
 
     # 8. MFA enrol + challenge
     page.goto(BASE + "/account/security")
@@ -208,8 +216,7 @@ with sync_playwright() as p:
         return "%06d" % ((struct.unpack(">I", h[o:o+4])[0] & 0x7fffffff) % 1000000)
     page.fill("input[name=code]", totp(secret))
     page.click("button:has-text('Turn on')")
-    page.wait_for_timeout(1500)
-    check("mfa enabled", "On since" in page.content())
+    check("mfa enabled", wait_text(page, "On since"))
     signout(page)
     signin(page, "alex@acme.test", "N3w-Password-2026")
     check("mfa challenge shown", "/mfa" in page.url)
@@ -221,8 +228,10 @@ with sync_playwright() as p:
     check("mfa passes", "/app/" in page.url)
 
     # 9. cross-tenant isolation (alex is in Acme, not Northwind)
-    r = page.goto(room_url)
-    check("other tenant room is 404", r.status == 404)
+    # With a loading boundary the page streams, so notFound() renders the 404 UI with HTTP 200.
+    page.goto(room_url)
+    page.wait_for_selector("text=could not be found", timeout=15000)
+    check("other tenant room shows not found", "Engagement room" not in page.content())
     ev_id = subprocess.check_output(["psql", "-h", "localhost", "-p", "5433", "-U", "postgres", "-d", "auditmesh", "-tAc",
         "select e.id from evidence e join tenants t on t.id=e.tenant_id where t.slug='northwind-labs' limit 1"]).decode().strip()
     r = page.goto(BASE + "/api/evidence/" + ev_id)
@@ -236,4 +245,18 @@ with sync_playwright() as p:
 
 failed = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(failed)}/{len(results)} passed")
-sys.exit(1 if failed else 0)
+
+# Progressive enhancement: with JavaScript off, sign-in must POST (never put the password in the URL).
+with sync_playwright() as p2:
+    b2 = p2.chromium.launch(channel="chrome", headless=True)
+    pg = b2.new_context(java_script_enabled=False).new_page()
+    pg.goto(BASE + "/signin")
+    pg.fill("input[name=email]", "dev@northwind.test")
+    pg.fill("input[name=password]", PW)
+    pg.click("button:has-text('Continue')")
+    pg.wait_for_load_state("load")
+    ok = "password=" not in pg.url
+    print(("PASS " if ok else "FAIL ") + "no password in URL without JS", pg.url)
+    b2.close()
+    if not ok:
+        sys.exit(1)

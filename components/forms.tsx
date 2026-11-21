@@ -27,7 +27,10 @@ export function useServerForm(
     const data = new FormData(e.currentTarget, submitter);
     startTransition(() => dispatch(data));
   };
-  return { state, pending, onSubmit, ref };
+  // `action` keeps the form working before hydration (progressive enhancement,
+  // and no GET fallback that would put field values in the URL). After
+  // hydration onSubmit runs first and prevents the reset-on-submit behaviour.
+  return { state, pending, onSubmit, ref, action: dispatch };
 }
 
 export function SubmitButton({

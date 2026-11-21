@@ -14,6 +14,7 @@ const ERRORS: Record<string, string> = {
   email_missing: "Your provider did not share an email address.",
   unverified_link: "An account with this email exists. Sign in with your password first, then link the provider in Security settings.",
   suspended: "This account is suspended.",
+  server: "Sign-in could not be completed because of a server problem. Try again shortly.",
 };
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {

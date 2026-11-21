@@ -111,3 +111,18 @@ The CSP already allows `challenges.cloudflare.com`.
   storage (S3 or R2); only `uploadEvidenceAction` and `/api/evidence/[id]` need to change.
 - **Rotate secrets:** OAuth client secrets expire (Microsoft defaults to 6–24 months). Rotating `AUTH_SECRET`
   invalidates 2-step secrets, so users must re-enroll.
+
+## Performance
+
+Each page makes a few sequential database round trips, so **the distance between Vercel functions and Neon dominates
+page time**.
+
+1. **Same region.** `vercel.json` pins functions to `sin1` (Singapore), to match a Neon project in
+   `aws-ap-southeast-1`. If your Neon project is in Mumbai (`aws-ap-south-1`), change it to `bom1`. Check under Vercel →
+   Settings → Functions → Region, and in the Neon console. A US default region (`iad1`) next to a Singapore database
+   adds roughly 200 ms per round trip.
+2. **Pooled URL.** `DATABASE_URL` must be the `-pooler` host.
+3. **Neon autosuspend.** On the free plan the compute sleeps after 5 idle minutes, and the first request then waits
+   for a cold start (around 0.5–1 s). On paid plans you can turn autosuspend off for production.
+4. **Fluid compute** (Vercel → Settings → Functions) keeps instances warm, so the connection pool is reused across
+   requests.

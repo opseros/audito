@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { CONTROL_LIBRARY } from "@/lib/catalog";
 import { uniqueSlug } from "@/lib/auth/flow";
@@ -71,23 +71,46 @@ export async function setTenantFrameworks(tenantId: string, kind: TenantType, co
   return chosen;
 }
 
-/** Readiness per framework = passing mapped controls / mapped controls. */
-export async function readiness(tenantId: string) {
-  const fws = await db
-    .select({ code: schema.tenantFrameworks.frameworkCode, milestone: schema.tenantFrameworks.milestone, name: schema.frameworks.name, short: schema.frameworks.shortName })
+export type Readiness = { code: string; milestone: string | null; name: string; short: string; total: number; passing: number; pct: number };
+
+/** Readiness for many tenants in one round trip: passing mapped controls / mapped controls. */
+export async function readinessMany(tenantIds: string[]): Promise<Map<string, Readiness[]>> {
+  const out = new Map<string, Readiness[]>();
+  if (!tenantIds.length) return out;
+  const rows = await db
+    .select({
+      tenantId: schema.tenantFrameworks.tenantId,
+      code: schema.tenantFrameworks.frameworkCode,
+      milestone: schema.tenantFrameworks.milestone,
+      name: schema.frameworks.name,
+      short: schema.frameworks.shortName,
+      total: sql<number>`count(${schema.controls.id})`.mapWith(Number),
+      passing: sql<number>`count(${schema.controls.id}) filter (where ${schema.controls.status} = 'passing')`.mapWith(Number),
+    })
     .from(schema.tenantFrameworks)
     .innerJoin(schema.frameworks, eq(schema.frameworks.code, schema.tenantFrameworks.frameworkCode))
-    .where(eq(schema.tenantFrameworks.tenantId, tenantId));
-  if (!fws.length) return [];
-  const rows = await db
-    .select({ fw: schema.controlMappings.frameworkCode, status: schema.controls.status })
-    .from(schema.controlMappings)
-    .innerJoin(schema.controls, eq(schema.controls.id, schema.controlMappings.controlId))
-    .where(and(eq(schema.controls.tenantId, tenantId), inArray(schema.controlMappings.frameworkCode, fws.map((f) => f.code))));
-  return fws.map((f) => {
-    const mine = rows.filter((r) => r.fw === f.code);
-    const passing = mine.filter((r) => r.status === "passing").length;
-    const pct = mine.length ? Math.round((passing / mine.length) * 100) : 0;
-    return { ...f, total: mine.length, passing, pct };
-  });
+    .leftJoin(schema.controlMappings, eq(schema.controlMappings.frameworkCode, schema.tenantFrameworks.frameworkCode))
+    .leftJoin(
+      schema.controls,
+      and(eq(schema.controls.id, schema.controlMappings.controlId), eq(schema.controls.tenantId, schema.tenantFrameworks.tenantId))
+    )
+    .where(inArray(schema.tenantFrameworks.tenantId, tenantIds))
+    .groupBy(
+      schema.tenantFrameworks.tenantId,
+      schema.tenantFrameworks.frameworkCode,
+      schema.tenantFrameworks.milestone,
+      schema.frameworks.name,
+      schema.frameworks.shortName
+    )
+    .orderBy(schema.tenantFrameworks.frameworkCode);
+  for (const r of rows) {
+    const list = out.get(r.tenantId) ?? [];
+    list.push({ code: r.code, milestone: r.milestone, name: r.name, short: r.short, total: r.total, passing: r.passing, pct: r.total ? Math.round((r.passing / r.total) * 100) : 0 });
+    out.set(r.tenantId, list);
+  }
+  return out;
+}
+
+export async function readiness(tenantId: string) {
+  return (await readinessMany([tenantId])).get(tenantId) ?? [];
 }

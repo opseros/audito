@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, schema } from "@/lib/db";
 import { requireKind } from "@/lib/context";
-import { readiness } from "@/lib/tenants";
+import { readinessMany } from "@/lib/tenants";
 import { actAsClientAction } from "@/app/app/actions";
 import { Bar, Empty, PageTitle, Stat, Table } from "@/components/ui";
 
@@ -11,26 +11,26 @@ export const metadata = { title: "Client portfolio" };
 
 export default async function Portfolio() {
   const ctx = await requireKind("provider");
-  const clients = await db
-    .select({ org: schema.tenants })
-    .from(schema.providerAccess)
-    .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.orgTenantId))
-    .where(and(eq(schema.providerAccess.providerTenantId, ctx.tenant.id), eq(schema.providerAccess.active, true)));
   const aud = alias(schema.tenants, "aud");
-  const engs = await db
-    .select({ eng: schema.engagements, auditor: aud.name })
-    .from(schema.engagements)
-    .innerJoin(aud, eq(aud.id, schema.engagements.auditorTenantId))
-    .where(eq(schema.engagements.providerTenantId, ctx.tenant.id));
-
-  const rows = await Promise.all(
-    clients.map(async ({ org }) => {
-      const r = await readiness(org.id);
-      const pct = r.length ? Math.round(r.reduce((a, b) => a + b.pct, 0) / r.length) : 0;
-      const e = engs.find((x) => x.eng.orgTenantId === org.id);
-      return { org, pct, fws: r.map((x) => x.short).join(", "), eng: e };
-    })
-  );
+  const [clients, engs] = await Promise.all([
+    db
+      .select({ org: schema.tenants })
+      .from(schema.providerAccess)
+      .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.orgTenantId))
+      .where(and(eq(schema.providerAccess.providerTenantId, ctx.tenant.id), eq(schema.providerAccess.active, true))),
+    db
+      .select({ eng: schema.engagements, auditor: aud.name })
+      .from(schema.engagements)
+      .innerJoin(aud, eq(aud.id, schema.engagements.auditorTenantId))
+      .where(eq(schema.engagements.providerTenantId, ctx.tenant.id)),
+  ]);
+  const ready = await readinessMany(clients.map((c) => c.org.id));
+  const rows = clients.map(({ org }) => {
+    const r = ready.get(org.id) ?? [];
+    const pct = r.length ? Math.round(r.reduce((a, b) => a + b.pct, 0) / r.length) : 0;
+    const e = engs.find((x) => x.eng.orgTenantId === org.id);
+    return { org, pct, fws: r.map((x) => x.short).join(", "), eng: e };
+  });
   const canAct = ctx.role !== "viewer";
 
   return (

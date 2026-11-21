@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { requireKind } from "@/lib/context";
-import { readiness } from "@/lib/tenants";
+import { readinessMany } from "@/lib/tenants";
 import { can } from "@/lib/permissions";
 import { sendProposalAction } from "@/app/app/actions";
 import { Empty, Lead, PageTitle } from "@/components/ui";
@@ -17,9 +17,8 @@ export default async function Leads() {
     .where(eq(schema.proposalRequests.firmTenantId, ctx.tenant.id))
     .orderBy(desc(schema.proposalRequests.createdAt));
   const canSend = can(ctx.role, ctx.tenant.type, "audit.review");
-  const withReadiness = await Promise.all(
-    rows.map(async (r) => ({ ...r, ready: r.p.shareReadiness ? await readiness(r.org.id) : null }))
-  );
+  const ready = await readinessMany(rows.filter((r) => r.p.shareReadiness).map((r) => r.org.id));
+  const withReadiness = rows.map((r) => ({ ...r, ready: r.p.shareReadiness ? ready.get(r.org.id) ?? [] : null }));
 
   return (
     <>

@@ -12,30 +12,33 @@ export default async function TeamPage() {
   const ctx = await requireWorkspace();
   const t = ctx.tenant;
   const manage = can(ctx.role, t.type, "team.manage") && !ctx.actingFrom;
-  const members = await db
-    .select({ m: schema.memberships, u: schema.users })
-    .from(schema.memberships)
-    .innerJoin(schema.users, eq(schema.users.id, schema.memberships.userId))
-    .where(eq(schema.memberships.tenantId, t.id))
-    .orderBy(schema.memberships.createdAt);
-  const invites = manage
-    ? await db
-        .select()
-        .from(schema.invitations)
-        .where(and(eq(schema.invitations.tenantId, t.id), isNull(schema.invitations.acceptedAt), gt(schema.invitations.expiresAt, new Date())))
-        .orderBy(desc(schema.invitations.createdAt))
-    : [];
-  const grants =
-    t.type === "organization"
-      ? await db
+  const isOrg = t.type === "organization";
+  const canGrant = isOrg && can(ctx.role, t.type, "provider.access.grant") && !ctx.actingFrom;
+  const [members, invites, grants, providers] = await Promise.all([
+    db
+      .select({ m: schema.memberships, u: schema.users })
+      .from(schema.memberships)
+      .innerJoin(schema.users, eq(schema.users.id, schema.memberships.userId))
+      .where(eq(schema.memberships.tenantId, t.id))
+      .orderBy(schema.memberships.createdAt),
+    manage
+      ? db
+          .select()
+          .from(schema.invitations)
+          .where(and(eq(schema.invitations.tenantId, t.id), isNull(schema.invitations.acceptedAt), gt(schema.invitations.expiresAt, new Date())))
+          .orderBy(desc(schema.invitations.createdAt))
+      : Promise.resolve([]),
+    isOrg
+      ? db
           .select({ p: schema.tenants, at: schema.providerAccess.createdAt })
           .from(schema.providerAccess)
           .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.providerTenantId))
           .where(and(eq(schema.providerAccess.orgTenantId, t.id), eq(schema.providerAccess.active, true)))
-      : [];
-  const providers = t.type === "organization" && can(ctx.role, t.type, "provider.access.grant") && !ctx.actingFrom
-    ? await db.select({ id: schema.tenants.id, name: schema.tenants.name }).from(schema.tenants).where(and(eq(schema.tenants.type, "provider"), eq(schema.tenants.status, "active")))
-    : [];
+      : Promise.resolve([]),
+    canGrant
+      ? db.select({ id: schema.tenants.id, name: schema.tenants.name }).from(schema.tenants).where(and(eq(schema.tenants.type, "provider"), eq(schema.tenants.status, "active")))
+      : Promise.resolve([]),
+  ]);
   const roleOptions = ASSIGNABLE_ROLES.filter((r) => canAssign(ctx.role, r)).map((r) => ({ value: r, label: ROLE_LABELS[r] }));
 
   return (

@@ -57,40 +57,45 @@ export default async function Room({
   const sel = reqs.find((r) => r.id === sp.req) || reqs[0];
   const accepted = reqs.filter((r) => r.status === "accepted").length;
 
-  const messages = sel
-    ? await db
-        .select({ m: schema.requestMessages, author: schema.users.name, tenant: schema.tenants })
-        .from(schema.requestMessages)
-        .leftJoin(schema.users, eq(schema.users.id, schema.requestMessages.authorUserId))
-        .innerJoin(schema.tenants, eq(schema.tenants.id, schema.requestMessages.authorTenantId))
-        .where(
-          and(
-            eq(schema.requestMessages.requestId, sel.id),
-            // Internal notes never leave the auditor firm.
-            side === "auditor" ? sql`true` : eq(schema.requestMessages.internal, false)
+  // Independent queries in parallel: each round trip to the database costs latency.
+  const [messages, files, samples, findings, timeline] = await Promise.all([
+    sel
+      ? db
+          .select({ m: schema.requestMessages, author: schema.users.name, tenant: schema.tenants })
+          .from(schema.requestMessages)
+          .leftJoin(schema.users, eq(schema.users.id, schema.requestMessages.authorUserId))
+          .innerJoin(schema.tenants, eq(schema.tenants.id, schema.requestMessages.authorTenantId))
+          .where(
+            and(
+              eq(schema.requestMessages.requestId, sel.id),
+              // Internal notes never leave the auditor firm.
+              side === "auditor" ? sql`true` : eq(schema.requestMessages.internal, false)
+            )
           )
-        )
-        .orderBy(asc(schema.requestMessages.createdAt))
-    : [];
-  const files = sel
-    ? await db
-        .select({ e: schema.evidence })
-        .from(schema.requestEvidence)
-        .innerJoin(schema.evidence, eq(schema.evidence.id, schema.requestEvidence.evidenceId))
-        .where(eq(schema.requestEvidence.requestId, sel.id))
-    : [];
-
-  const samples = tab === "sampling" ? await db.select().from(schema.samples).where(eq(schema.samples.engagementId, eng.id)).orderBy(desc(schema.samples.createdAt)) : [];
-  const findings = tab === "findings" ? await db.select().from(schema.findings).where(eq(schema.findings.engagementId, eng.id)).orderBy(desc(schema.findings.createdAt)) : [];
-  const timeline =
+          .orderBy(asc(schema.requestMessages.createdAt))
+      : Promise.resolve([]),
+    sel
+      ? db
+          .select({ e: schema.evidence })
+          .from(schema.requestEvidence)
+          .innerJoin(schema.evidence, eq(schema.evidence.id, schema.requestEvidence.evidenceId))
+          .where(eq(schema.requestEvidence.requestId, sel.id))
+      : Promise.resolve([]),
+    tab === "sampling"
+      ? db.select().from(schema.samples).where(eq(schema.samples.engagementId, eng.id)).orderBy(desc(schema.samples.createdAt))
+      : Promise.resolve([]),
+    tab === "findings"
+      ? db.select().from(schema.findings).where(eq(schema.findings.engagementId, eng.id)).orderBy(desc(schema.findings.createdAt))
+      : Promise.resolve([]),
     tab === "timeline"
-      ? await db
+      ? db
           .select()
           .from(schema.auditLog)
           .where(and(sql`${schema.auditLog.detail}->>'engagementId' = ${eng.id}`, sql`${schema.auditLog.action} <> 'room.internal'`))
           .orderBy(desc(schema.auditLog.at))
           .limit(50)
-      : [];
+      : Promise.resolve([]),
+  ]);
 
   const url = (q: Record<string, string>) => `/app/rooms/${eng.id}?${new URLSearchParams(q).toString()}`;
 

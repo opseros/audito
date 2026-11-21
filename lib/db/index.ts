@@ -18,7 +18,8 @@ function createPool() {
   return new Pool({
     connectionString: url || undefined,
     max: 5,
-    idleTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    keepAlive: true,
     ssl: local ? undefined : { rejectUnauthorized: true },
   });
 }

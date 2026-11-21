@@ -10,7 +10,17 @@ export const dynamic = "force-dynamic";
 
 const LABEL = { google: "Google", microsoft: "Microsoft" } as const;
 
-export async function GET(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+export async function GET(request: Request, ctx: { params: Promise<{ provider: string }> }) {
+  try {
+    return await handle(request, ctx);
+  } catch (error) {
+    // Usually the database: migrations not applied or DATABASE_URL wrong.
+    console.error("[oauth callback] failed:", error);
+    return NextResponse.redirect(new URL("/signin?error=server", new URL(request.url).origin));
+  }
+}
+
+async function handle(request: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const url = new URL(request.url);
   const fail = (code: string) => NextResponse.redirect(new URL(`/signin?error=${code}`, url.origin));

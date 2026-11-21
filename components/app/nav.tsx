@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/components/ui";
 
@@ -20,7 +20,10 @@ export function SideNav({ title, items, tint, ink }: { title: string; items: Nav
             className={cx("block rounded-lg px-3 py-2.5 text-sm", on ? "font-semibold" : "text-label hover:bg-hair")}
             style={on ? { background: tint, color: ink } : undefined}
           >
-            {n.label}
+            <span className="flex items-center justify-between gap-2">
+              {n.label}
+              <Pending />
+            </span>
           </Link>
         );
       })}
@@ -59,3 +62,15 @@ export function WorkspaceSwitcher({
     </form>
   );
 }
+
+/** Instant feedback while the next page renders on the server. */
+function Pending() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden
+      className={cx("h-2 w-2 rounded-full bg-current transition-opacity", pending ? "animate-pulse opacity-60" : "opacity-0")}
+    />
+  );
+}
+

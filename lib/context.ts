@@ -29,11 +29,35 @@ export const getContext = cache(async (): Promise<AppContext | null> => {
   if (!auth) return null;
   const { session, user } = auth;
 
-  const rows = await db
-    .select({ tenant: schema.tenants, role: schema.memberships.role })
-    .from(schema.memberships)
-    .innerJoin(schema.tenants, eq(schema.tenants.id, schema.memberships.tenantId))
-    .where(eq(schema.memberships.userId, user.id));
+  const [rows, supportRow, grantRow] = await Promise.all([
+    db
+      .select({ tenant: schema.tenants, role: schema.memberships.role })
+      .from(schema.memberships)
+      .innerJoin(schema.tenants, eq(schema.tenants.id, schema.memberships.tenantId))
+      .where(eq(schema.memberships.userId, user.id)),
+    session.supportSessionId && user.isSuperAdmin
+      ? db
+          .select({ s: schema.supportSessions, tenant: schema.tenants })
+          .from(schema.supportSessions)
+          .innerJoin(schema.tenants, eq(schema.tenants.id, schema.supportSessions.tenantId))
+          .where(eq(schema.supportSessions.id, session.supportSessionId))
+          .then((r) => r[0])
+      : Promise.resolve(undefined),
+    session.actingTenantId && session.activeTenantId
+      ? db
+          .select({ org: schema.tenants })
+          .from(schema.providerAccess)
+          .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.orgTenantId))
+          .where(
+            and(
+              eq(schema.providerAccess.providerTenantId, session.activeTenantId),
+              eq(schema.providerAccess.orgTenantId, session.actingTenantId),
+              eq(schema.providerAccess.active, true)
+            )
+          )
+          .then((r) => r[0])
+      : Promise.resolve(undefined),
+  ]);
   const memberships: Membership[] = rows.filter((r) => r.tenant.status !== "suspended");
 
   let tenant: Tenant | null = null;
@@ -42,39 +66,19 @@ export const getContext = cache(async (): Promise<AppContext | null> => {
   let support: AppContext["support"] = null;
 
   // 1. Super admin support session: read-only view of one tenant.
-  if (session.supportSessionId && user.isSuperAdmin) {
-    const [s] = await db
-      .select({ s: schema.supportSessions, tenant: schema.tenants })
-      .from(schema.supportSessions)
-      .innerJoin(schema.tenants, eq(schema.tenants.id, schema.supportSessions.tenantId))
-      .where(eq(schema.supportSessions.id, session.supportSessionId));
-    if (s && !s.s.endedAt) {
-      tenant = s.tenant;
-      role = "support";
-      support = { id: s.s.id, reason: s.s.reason };
-    }
+  if (supportRow && !supportRow.s.endedAt) {
+    tenant = supportRow.tenant;
+    role = "support";
+    support = { id: supportRow.s.id, reason: supportRow.s.reason };
   }
 
-  // 2. Provider acting inside a client organization.
-  if (!tenant && session.actingTenantId && session.activeTenantId) {
+  // 2. Provider acting inside a client organization (grant fetched above).
+  if (!tenant && grantRow) {
     const provider = memberships.find((m) => m.tenant.id === session.activeTenantId && m.tenant.type === "provider");
-    if (provider && provider.role !== "viewer") {
-      const [grant] = await db
-        .select({ org: schema.tenants })
-        .from(schema.providerAccess)
-        .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.orgTenantId))
-        .where(
-          and(
-            eq(schema.providerAccess.providerTenantId, provider.tenant.id),
-            eq(schema.providerAccess.orgTenantId, session.actingTenantId),
-            eq(schema.providerAccess.active, true)
-          )
-        );
-      if (grant && grant.org.status === "active") {
-        tenant = grant.org;
-        role = "contributor";
-        actingFrom = provider.tenant;
-      }
+    if (provider && provider.role !== "viewer" && grantRow.org.status === "active") {
+      tenant = grantRow.org;
+      role = "contributor";
+      actingFrom = provider.tenant;
     }
   }
 
@@ -117,10 +121,26 @@ export async function requireAccount() {
   return ctx;
 }
 
-const mfaRequired = cache(async () => {
-  const [s] = await db.select().from(schema.platformSettings).where(eq(schema.platformSettings.key, "require_mfa"));
-  return Boolean(s?.enabled);
-});
+// Platform settings change rarely: cache per server instance for 30 s.
+let settingsCache: { at: number; value: Promise<Map<string, boolean>> } | null = null;
+export function platformSettings() {
+  if (!settingsCache || Date.now() - settingsCache.at > 30_000) {
+    settingsCache = {
+      at: Date.now(),
+      value: db
+        .select()
+        .from(schema.platformSettings)
+        .then((rows) => new Map(rows.map((r) => [r.key, r.enabled])))
+        .catch((e) => {
+          settingsCache = null;
+          throw e;
+        }),
+    };
+  }
+  return settingsCache.value;
+}
+
+const mfaRequired = async () => Boolean((await platformSettings()).get("require_mfa"));
 
 /** For pages: signed in, verified, MFA satisfied, inside a workspace. */
 export async function requireWorkspace() {

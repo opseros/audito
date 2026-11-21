@@ -21,9 +21,9 @@ const KIND_COLOR = { organization: "#2B4ACB", auditor: "#0F6B5C", provider: "#B4
 type Kind = keyof typeof KIND_COLOR;
 
 export function SignInForm({ next, notice }: { next?: string; notice?: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(signInAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(signInAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next || ""} />
       {notice && !state && <FormMessage state={{ ok: notice }} />}
       <label className="lbl">
@@ -48,10 +48,10 @@ export function SignInForm({ next, notice }: { next?: string; notice?: string })
 
 export function SignUpForm({ initialKind }: { initialKind: Kind }) {
   const [kind, setKind] = useState<Kind>(initialKind);
-  const { state, pending, onSubmit, ref } = useServerForm(signUpAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(signUpAction);
   const copy = SIGNUP_COPY[kind];
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-[18px]">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-[18px]">
       <div className="flex flex-col gap-2">
         <span className="text-[13px] font-semibold text-label">I am joining as</span>
         <div className="flex flex-wrap gap-2">
@@ -111,10 +111,10 @@ export function SignUpForm({ initialKind }: { initialKind: Kind }) {
 
 export function WelcomeForm() {
   const [kind, setKind] = useState<Kind>("organization");
-  const { state, pending, onSubmit, ref } = useServerForm(createWorkspaceAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(createWorkspaceAction);
   const copy = SIGNUP_COPY[kind];
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
         {(Object.keys(SIGNUP_COPY) as Kind[]).map((k) => (
           <button
@@ -148,9 +148,9 @@ export function WelcomeForm() {
 }
 
 export function ForgotForm() {
-  const { state, pending, onSubmit, ref } = useServerForm(forgotPasswordAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(forgotPasswordAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <label className="lbl">
         Work email
         <input className="input" type="email" name="email" required autoComplete="email" />
@@ -163,9 +163,9 @@ export function ForgotForm() {
 }
 
 export function ResetForm({ token }: { token: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(resetPasswordAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(resetPasswordAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="token" value={token} />
       <label className="lbl">
         New password
@@ -182,9 +182,9 @@ export function ResetForm({ token }: { token: string }) {
 }
 
 export function MfaForm({ next }: { next: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(mfaAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(mfaAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
       <label className="lbl">
         6-digit code
@@ -197,9 +197,9 @@ export function MfaForm({ next }: { next: string }) {
 }
 
 export function ResendVerification() {
-  const { state, pending, onSubmit, ref } = useServerForm(resendVerificationAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(resendVerificationAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <FormMessage state={state} />
       <SubmitButton pending={pending} variant="secondary">Resend email</SubmitButton>
     </form>
@@ -207,9 +207,9 @@ export function ResendVerification() {
 }
 
 export function InviteSignupForm({ token, email }: { token: string; email: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(acceptInviteNewUserAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(acceptInviteNewUserAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="token" value={token} />
       <label className="lbl">
         Email

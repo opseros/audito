@@ -11,16 +11,22 @@ export const metadata = { title: "Audit readiness" };
 export default async function Overview() {
   const ctx = await requireKind("organization");
   const t = ctx.tenant;
-  const fws = await readiness(t.id);
-  const failing = await db.select().from(schema.controls).where(and(eq(schema.controls.tenantId, t.id), eq(schema.controls.status, "failing"))).limit(6);
-
   const aud = alias(schema.tenants, "aud");
-  const engs = await db
-    .select({ eng: schema.engagements, auditor: aud })
-    .from(schema.engagements)
-    .innerJoin(aud, eq(aud.id, schema.engagements.auditorTenantId))
-    .where(eq(schema.engagements.orgTenantId, t.id))
-    .orderBy(desc(schema.engagements.createdAt));
+  const [fws, failing, engs, providers] = await Promise.all([
+    readiness(t.id),
+    db.select().from(schema.controls).where(and(eq(schema.controls.tenantId, t.id), eq(schema.controls.status, "failing"))).limit(6),
+    db
+      .select({ eng: schema.engagements, auditor: aud })
+      .from(schema.engagements)
+      .innerJoin(aud, eq(aud.id, schema.engagements.auditorTenantId))
+      .where(eq(schema.engagements.orgTenantId, t.id))
+      .orderBy(desc(schema.engagements.createdAt)),
+    db
+      .select({ name: schema.tenants.name })
+      .from(schema.providerAccess)
+      .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.providerTenantId))
+      .where(and(eq(schema.providerAccess.orgTenantId, t.id), eq(schema.providerAccess.active, true))),
+  ]);
   const first = engs[0];
   const reqs = first
     ? await db
@@ -30,11 +36,6 @@ export default async function Overview() {
         .orderBy(schema.engagementRequests.position)
         .limit(6)
     : [];
-  const providers = await db
-    .select({ name: schema.tenants.name })
-    .from(schema.providerAccess)
-    .innerJoin(schema.tenants, eq(schema.tenants.id, schema.providerAccess.providerTenantId))
-    .where(and(eq(schema.providerAccess.orgTenantId, t.id), eq(schema.providerAccess.active, true)));
   const team = [...new Map(engs.map((e) => [e.auditor.id, e])).values()];
 
   return (

@@ -19,9 +19,9 @@ import { startSupportAction } from "@/app/admin/actions";
 import { FormMessage, SubmitButton, useServerForm } from "@/components/forms";
 
 export function ControlForm({ c, disabled }: { c: { id: string; status: string; ownerName: string | null; testResult: string | null }; disabled: boolean }) {
-  const { state, pending, onSubmit, ref } = useServerForm(updateControlAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(updateControlAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="controlId" value={c.id} />
       <label className="lbl">
         Status
@@ -56,9 +56,9 @@ export function UploadForm({
   requestId?: string;
   accent?: string;
 }) {
-  const { state, pending, onSubmit, ref } = useServerForm(uploadEvidenceAction, { resetOnOk: true });
+  const { state, pending, onSubmit, ref, action } = useServerForm(uploadEvidenceAction, { resetOnOk: true });
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       {requestId && <input type="hidden" name="requestId" value={requestId} />}
       {controlId ? (
         <input type="hidden" name="controlId" value={controlId} />
@@ -85,9 +85,9 @@ export function UploadForm({
 }
 
 export function ProposalForm({ firmId, frameworks }: { firmId: string; frameworks: string[] }) {
-  const { state, pending, onSubmit, ref } = useServerForm(requestProposalAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(requestProposalAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3.5">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3.5">
       <input type="hidden" name="firmId" value={firmId} />
       <label className="lbl">
         Framework
@@ -111,9 +111,9 @@ export function ProposalForm({ firmId, frameworks }: { firmId: string; framework
 }
 
 export function InviteForm({ roles }: { roles: { value: string; label: string }[] }) {
-  const { state, pending, onSubmit, ref } = useServerForm(inviteMemberAction, { resetOnOk: true });
+  const { state, pending, onSubmit, ref, action } = useServerForm(inviteMemberAction, { resetOnOk: true });
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl min-w-[240px] flex-1">
         Email
         <input name="email" type="email" required className="input" placeholder="colleague@company.com" />
@@ -137,10 +137,10 @@ export function InviteForm({ roles }: { roles: { value: string; label: string }[
 }
 
 export function GrantProviderForm({ providers }: { providers: { id: string; name: string }[] }) {
-  const { state, pending, onSubmit, ref } = useServerForm(grantProviderAction, { resetOnOk: true });
+  const { state, pending, onSubmit, ref, action } = useServerForm(grantProviderAction, { resetOnOk: true });
   if (!providers.length) return <p className="m-0 text-sm text-muted">No service providers on AuditMesh yet.</p>;
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl min-w-[240px] flex-1">
         Service provider
         <select name="providerId" className="input">
@@ -172,7 +172,7 @@ export function RoomReplyForm({
   accent: string;
   replyAs: string;
 }) {
-  const { state, pending, onSubmit, ref } = useServerForm(roomAction, { resetOnOk: true });
+  const { state, pending, onSubmit, ref, action } = useServerForm(roomAction, { resetOnOk: true });
   const buttons: [string, string][] =
     side === "auditor"
       ? [["accept", "Accept evidence"], ["rework", "Request rework"], ["finding", "Raise exception"], ["internal", "Internal note"], ["reply", "Reply only"]]
@@ -180,7 +180,7 @@ export function RoomReplyForm({
         ? [["submit", "Submit on client behalf"], ["reply", "Reply only"]]
         : [["submit", "Submit evidence"], ["reply", "Reply only"]];
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="requestId" value={requestId} />
       <label className="lbl" htmlFor="reply">
         Reply as {replyAs}
@@ -213,9 +213,9 @@ export function RoomReplyForm({
 }
 
 export function SampleForm({ engagementId }: { engagementId: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(drawSampleAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(drawSampleAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="engagementId" value={engagementId} />
       <div className="flex flex-wrap items-end gap-3">
         <label className="lbl">
@@ -249,10 +249,10 @@ export function SampleForm({ engagementId }: { engagementId: string }) {
 }
 
 export function NewEngagementForm({ orgs }: { orgs: { id: string; name: string }[] }) {
-  const { state, pending, onSubmit, ref } = useServerForm(createEngagementAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(createEngagementAction);
   if (!orgs.length) return <p className="m-0 text-sm text-muted">Clients appear here after they request a proposal from your firm.</p>;
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl">
         Client
         <select name="orgId" className="input">
@@ -291,9 +291,9 @@ export function NewEngagementForm({ orgs }: { orgs: { id: string; name: string }
 }
 
 export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
-  const { state, pending, onSubmit, ref } = useServerForm(changePasswordAction, { resetOnOk: true });
+  const { state, pending, onSubmit, ref, action } = useServerForm(changePasswordAction, { resetOnOk: true });
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       {hasPassword && (
         <label className="lbl">
           Current password
@@ -311,9 +311,9 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
 }
 
 export function MfaConfirmForm() {
-  const { state, pending, onSubmit, ref } = useServerForm(confirmMfaAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(confirmMfaAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl">
         Code from your app
         <input name="code" inputMode="numeric" maxLength={7} className="input w-40 tracking-[0.3em]" required />
@@ -327,9 +327,9 @@ export function MfaConfirmForm() {
 }
 
 export function MfaDisableForm() {
-  const { state, pending, onSubmit, ref } = useServerForm(disableMfaAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(disableMfaAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl">
         Current code
         <input name="code" inputMode="numeric" maxLength={7} className="input w-40" required />
@@ -343,9 +343,9 @@ export function MfaDisableForm() {
 }
 
 export function ProfileForm({ name }: { name: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(updateProfileAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(updateProfileAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl min-w-[240px] flex-1">
         Your name
         <input name="name" className="input" defaultValue={name} required />
@@ -359,9 +359,9 @@ export function ProfileForm({ name }: { name: string }) {
 }
 
 export function WorkspaceForm({ t }: { t: { name: string; location: string | null; blurb: string | null; timeline: string | null; type: string } }) {
-  const { state, pending, onSubmit, ref } = useServerForm(updateWorkspaceAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(updateWorkspaceAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <label className="lbl">
         Workspace name
         <input name="name" className="input" defaultValue={t.name} required />
@@ -389,9 +389,9 @@ export function WorkspaceForm({ t }: { t: { name: string; location: string | nul
 }
 
 export function SupportForm({ tenantId }: { tenantId: string }) {
-  const { state, pending, onSubmit, ref } = useServerForm(startSupportAction);
+  const { state, pending, onSubmit, ref, action } = useServerForm(startSupportAction);
   return (
-    <form ref={ref} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="tenantId" value={tenantId} />
       <label className="lbl" htmlFor="support-reason">
         Reason
