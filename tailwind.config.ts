@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// Tokens taken from the AuditMesh prototype.
+// Tokens taken from the AuditOps prototype.
 export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {

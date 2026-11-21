@@ -3,7 +3,7 @@ import { providersEnabled } from "@/lib/env";
 /**
  * Google / Microsoft sign-in. These are plain links to the server-side start
  * route: the provider runs its own bot and risk checks, so Turnstile guards
- * only the forms AuditMesh processes itself (password, sign-up, reset).
+ * only the forms AuditOps processes itself (password, sign-up, reset).
  */
 export function OAuthButtons({ next }: { next?: string }) {
   const list = [

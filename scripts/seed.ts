@@ -1,5 +1,5 @@
 /**
- * Demo data mirroring the AuditMesh prototype. Development / preview only.
+ * Demo data mirroring the AuditOps prototype. Development / preview only.
  *   SEED_DEMO_PASSWORD='Demo-pass-2026!' npm run db:seed
  */
 import { hash } from "@node-rs/argon2";
@@ -37,10 +37,10 @@ async function main() {
   const northstarU = await user("ops@northstar.test", "N. Rao");
   const meridianU = await user("ops@meridian.test", "M. Grant");
   const graniteU = await user("ops@granite.test", "G. Lopez");
-  await user("admin@auditmesh.test", "R. Menon", true);
+  await user("admin@auditops.test", "R. Menon", true);
 
   const nw = await tenant({ name: "Northwind Labs", slug: "northwind-labs", type: "organization", subtype: "51–200", plan: "Growth", frameworks: ["SOC2", "ISO27001", "PCI", "FEDRAMP"] }, priya.id, [[dev.id, "member"]]);
-  const ll = await tenant({ name: "Ledgerline CPA", slug: "ledgerline-cpa", type: "auditor", subtype: "CPA firm (SOC)", plan: "Firm", frameworks: ["SOC1", "SOC2", "HIPAA"], listed: true, location: "Remote · US", blurb: "SOC reports for SaaS and fintech. Fieldwork runs fully inside AuditMesh.", timeline: "Type I in 4–6 weeks; Type II after 3–12 month window" }, auditorU.id);
+  const ll = await tenant({ name: "Ledgerline CPA", slug: "ledgerline-cpa", type: "auditor", subtype: "CPA firm (SOC)", plan: "Firm", frameworks: ["SOC1", "SOC2", "HIPAA"], listed: true, location: "Remote · US", blurb: "SOC reports for SaaS and fintech. Fieldwork runs fully inside AuditOps.", timeline: "Type I in 4–6 weeks; Type II after 3–12 month window" }, auditorU.id);
   await tenant({ name: "Northstar Registrar", slug: "northstar-registrar", type: "auditor", subtype: "ISO certification body", plan: "Firm", frameworks: ["ISO27001", "ISO42001"], listed: true, location: "Bengaluru · London", blurb: "Accredited ISO certification. Stage 1 and Stage 2 with surveillance audits.", timeline: "Stage 1 to certificate in 8–12 weeks" }, northstarU.id);
   await tenant({ name: "Granite QSA", slug: "granite-qsa", type: "auditor", subtype: "PCI QSA company", plan: "Firm", frameworks: ["PCI"], listed: true, location: "Remote · US, EU", blurb: "PCI assessments for e-commerce and payments, including checkout script controls.", timeline: "ROC in 6–10 weeks" }, graniteU.id);
   const mer = await tenant({ name: "Meridian 3PAO", slug: "meridian-3pao", type: "auditor", subtype: "FedRAMP 3PAO", status: "pending_verification", plan: "Firm", frameworks: ["FEDRAMP"], location: "Washington DC", blurb: "Assessments for 20x Low and Moderate using machine-readable evidence." }, meridianU.id);
@@ -127,7 +127,7 @@ async function main() {
 
   await db.insert(schema.auditLog).values({ actorLabel: "Seed", action: "seed", summary: "loaded demo data" });
   console.log("Demo data loaded. Accounts (password = SEED_DEMO_PASSWORD):");
-  console.log("  priya@northwind.test  (Northwind Labs owner)\n  dev@northwind.test    (Northwind Labs member)\n  riya@ledgerline.test  (Ledgerline CPA owner)\n  asha@brightgate.test  (Brightgate Advisory owner)\n  admin@auditmesh.test  (super admin)");
+  console.log("  priya@northwind.test  (Northwind Labs owner)\n  dev@northwind.test    (Northwind Labs member)\n  riya@ledgerline.test  (Ledgerline CPA owner)\n  asha@brightgate.test  (Brightgate Advisory owner)\n  admin@auditops.test  (super admin)");
   await pool.end();
 }
 

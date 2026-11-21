@@ -28,7 +28,7 @@ export default async function AdminOverview() {
 
   return (
     <>
-      <PageTitle eyebrow="AuditMesh platform" title="Platform overview" />
+      <PageTitle eyebrow="AuditOps platform" title="Platform overview" />
       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
         {kpis.map((k) => (
           <Link key={k.label} href={k.href} className="card flex flex-col gap-1.5 text-ink no-underline hover:border-field">

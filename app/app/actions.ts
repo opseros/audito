@@ -206,7 +206,7 @@ export async function inviteMemberAction(_: FormState, form: FormData) {
     });
     await sendEmail(
       email.data,
-      `${ctx.user.name} invited you to ${ctx.tenant.name} on AuditMesh`,
+      `${ctx.user.name} invited you to ${ctx.tenant.name} on AuditOps`,
       `Join ${ctx.tenant.name} as ${role}: ${env.appUrl}/invite/${token}\n\nThe link expires in 7 days.`
     );
     await log(ctx, "team.invited", `invited ${email.data} as ${role}`);

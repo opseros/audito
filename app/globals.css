@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+  html { scroll-behavior: smooth; }
   body { @apply m-0 bg-canvas font-sans text-ink antialiased; }
   h1, h2, h3 { @apply m-0 font-display; }
 }

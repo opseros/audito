@@ -11,6 +11,7 @@ export function sha256(value: string): string {
 }
 
 function key(purpose: string) {
+  // Legacy label from the AuditMesh name: changing it would invalidate stored MFA secrets.
   return createHmac("sha256", authSecret()).update(`auditmesh:${purpose}`).digest();
 }
 

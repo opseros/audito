@@ -1,4 +1,4 @@
-# Deploying AuditMesh (Vercel + Neon)
+# Deploying AuditOps (Vercel + Neon)
 
 ## 1. Neon database
 
@@ -12,8 +12,8 @@
 ## 2. Repository
 
 ```bash
-git init && git add -A && git commit -m "AuditMesh"
-git remote add origin git@github.com:<you>/auditmesh.git
+git init && git add -A && git commit -m "AuditOps"
+git remote add origin git@github.com:<you>/auditops.git
 git push -u origin main
 ```
 
@@ -58,7 +58,7 @@ Then deploy. `NEXT_PUBLIC_*` values are build-time, so redeploy after changing t
 
 Google Cloud Console → APIs & Services:
 
-1. **OAuth consent screen:** External, app name AuditMesh, scopes `openid email profile`.
+1. **OAuth consent screen:** External, app name AuditOps, scopes `openid email profile`.
 2. **Credentials → Create OAuth client ID → Web application:**
    - Authorized JavaScript origin: `https://your-domain`
    - Authorized redirect URI: `https://your-domain/api/auth/oauth/google/callback`
@@ -90,7 +90,7 @@ The CSP already allows `challenges.cloudflare.com`.
 ## 9. Email (Resend)
 
 1. Add and verify your sending domain in Resend (DNS records).
-2. Set `RESEND_API_KEY` and `EMAIL_FROM="AuditMesh <no-reply@your-domain>"`.
+2. Set `RESEND_API_KEY` and `EMAIL_FROM="AuditOps <no-reply@your-domain>"`.
 
 ## 10. Smoke test after deploy
 

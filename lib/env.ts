@@ -15,7 +15,7 @@ export const env = {
   turnstileSecret: process.env.TURNSTILE_SECRET_KEY || "",
   turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "",
   resendKey: process.env.RESEND_API_KEY || "",
-  emailFrom: process.env.EMAIL_FROM || "AuditMesh <no-reply@example.com>",
+  emailFrom: process.env.EMAIL_FROM || "AuditOps <no-reply@example.com>",
 };
 
 export const providersEnabled = {

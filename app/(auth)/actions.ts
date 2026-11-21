@@ -80,7 +80,7 @@ export async function signUpAction(_: FormState, form: FormData): Promise<FormSt
     await sendEmail(
       email.data,
       "Someone tried to sign up with your email",
-      `An AuditMesh account already exists for this address. Sign in at ${env.appUrl}/signin or reset your password at ${env.appUrl}/forgot-password.`
+      `An AuditOps account already exists for this address. Sign in at ${env.appUrl}/signin or reset your password at ${env.appUrl}/forgot-password.`
     );
     return { ok: "Check your inbox to continue." };
   }
@@ -164,7 +164,7 @@ export async function forgotPasswordAction(_: FormState, form: FormData): Promis
     const token = await issueToken(user.id, "password_reset", 60);
     await sendEmail(
       user.email,
-      "Reset your AuditMesh password",
+      "Reset your AuditOps password",
       `Reset your password: ${env.appUrl}/reset-password?token=${token}\n\nThe link expires in 1 hour. If you did not ask for this, ignore this email.`
     );
   }

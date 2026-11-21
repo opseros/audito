@@ -1,5 +1,5 @@
 /**
- * AuditMesh access model. Pure functions, safe in any runtime.
+ * AuditOps access model. Pure functions, safe in any runtime.
  *
  * Platform: super admin (users.is_super_admin). Created by script only.
  * Workspace roles (memberships.role): owner > admin > member > viewer.

@@ -20,7 +20,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageTitle title="Marketplace" />
-      <Lead>Find auditors, certification bodies, QSAs, 3PAOs and consultants. Audit firms are listed only after AuditMesh verifies their credentials.</Lead>
+      <Lead>Find auditors, certification bodies, QSAs, 3PAOs and consultants. Audit firms are listed only after AuditOps verifies their credentials.</Lead>
       <div className="flex flex-wrap gap-2">
         {Object.keys(TYPES).map((t) => (
           <Chip key={t} href={`/app/marketplace${t === "All" ? "" : `?type=${encodeURIComponent(t)}`}`} on={type === t}>{t}</Chip>

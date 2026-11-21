@@ -12,7 +12,7 @@ export default async function Partners() {
   return (
     <>
       <PageTitle title="Auditor partners" />
-      <Lead>Verified audit firms on AuditMesh. Referrals with an independence check are coming soon: you will not be able to refer a client to a firm you also consult for on the same scope.</Lead>
+      <Lead>Verified audit firms on AuditOps. Referrals with an independence check are coming soon: you will not be able to refer a client to a firm you also consult for on the same scope.</Lead>
       {firms.length === 0 && <Empty>No verified firms yet.</Empty>}
       <div className="flex flex-col gap-3">
         {firms.map((f) => (

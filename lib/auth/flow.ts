@@ -50,8 +50,8 @@ export async function sendVerificationEmail(user: Pick<User, "id" | "email" | "n
   const link = `${env.appUrl}/verify-email/confirm?token=${token}`;
   await sendEmail(
     user.email,
-    "Confirm your AuditMesh email",
-    `Hi ${user.name},\n\nConfirm your email address to finish setting up AuditMesh:\n${link}\n\nThe link expires in 24 hours.`
+    "Confirm your AuditOps email",
+    `Hi ${user.name},\n\nConfirm your email address to finish setting up AuditOps:\n${link}\n\nThe link expires in 24 hours.`
   );
 }
 

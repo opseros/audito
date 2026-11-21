@@ -8,7 +8,7 @@ export function newTotpSecret() {
 }
 
 export function totpUri(email: string, secret: Uint8Array) {
-  return createTOTPKeyURI("AuditMesh", email, secret, 30, 6);
+  return createTOTPKeyURI("AuditOps", email, secret, 30, 6);
 }
 
 export function sealSecret(secret: Uint8Array) {

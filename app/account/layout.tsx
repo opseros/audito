@@ -1,3 +1,4 @@
+import { LogoMark } from "@/components/brand";
 import Link from "next/link";
 import { requireAccount } from "@/lib/context";
 import { signOutAction } from "@/app/(auth)/actions";
@@ -10,7 +11,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     <div className="min-h-screen">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
         <div className="flex items-center gap-4">
-          <span className="font-display text-lg font-bold">AuditMesh</span>
+          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
           <Link href={ctx.tenant ? "/app" : ctx.user.isSuperAdmin ? "/admin" : "/welcome"} className="text-sm font-semibold text-org hover:underline">
             ← Back to workspace
           </Link>

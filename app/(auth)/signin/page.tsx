@@ -35,13 +35,13 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         <OAuthButtons next={sp.next} />
         <SignInForm next={sp.next} notice={notice} />
         <span className="text-[13px] text-muted">
-          New to AuditMesh?{" "}
+          New to AuditOps?{" "}
           <Link href="/signup" className="font-semibold text-org hover:underline">
             Create a workspace
           </Link>
         </span>
       </div>
-      <p className="text-center text-xs text-muted">Super admin accounts are created by AuditMesh only, never through sign-up.</p>
+      <p className="text-center text-xs text-muted">Super admin accounts are created by AuditOps only, never through sign-up.</p>
     </section>
   );
 }

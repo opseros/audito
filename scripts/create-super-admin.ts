@@ -1,5 +1,5 @@
 /**
- * Creates or promotes an AuditMesh super admin. Super admins are never
+ * Creates or promotes an AuditOps super admin. Super admins are never
  * created through sign-up.
  *
  *   npm run admin:create -- admin@yourco.com "Full Name"

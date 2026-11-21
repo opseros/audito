@@ -138,7 +138,7 @@ export function InviteForm({ roles }: { roles: { value: string; label: string }[
 
 export function GrantProviderForm({ providers }: { providers: { id: string; name: string }[] }) {
   const { state, pending, onSubmit, ref, action } = useServerForm(grantProviderAction, { resetOnOk: true });
-  if (!providers.length) return <p className="m-0 text-sm text-muted">No service providers on AuditMesh yet.</p>;
+  if (!providers.length) return <p className="m-0 text-sm text-muted">No service providers on AuditOps yet.</p>;
   return (
     <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="lbl min-w-[240px] flex-1">

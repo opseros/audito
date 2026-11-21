@@ -1,3 +1,4 @@
+import { LogoMark } from "@/components/brand";
 import { requireSuperAdmin } from "@/lib/context";
 import { signOutAction } from "@/app/(auth)/actions";
 import { switchWorkspaceAction } from "@/app/app/actions";
@@ -19,14 +20,14 @@ const NAV = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireSuperAdmin();
   const options = [
-    { value: "admin", label: "AuditMesh · Super admin" },
+    { value: "admin", label: "AuditOps · Super admin" },
     ...ctx.memberships.map((m) => ({ value: m.tenant.id, label: m.tenant.name })),
   ];
   return (
     <div className="min-h-screen">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="font-display text-lg font-bold">AuditMesh</span>
+          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
           <WorkspaceSwitcher options={options} current="admin" action={switchWorkspaceAction} />
         </div>
         <div className="flex items-center gap-3">
@@ -36,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       <div className="flex min-h-[calc(100vh-65px)] flex-wrap md:flex-nowrap">
-        <SideNav title="AuditMesh platform" items={NAV} tint="#EDE9FE" ink="#4C1D95" />
+        <SideNav title="AuditOps platform" items={NAV} tint="#EDE9FE" ink="#4C1D95" />
         <main className="box-border flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-8 pb-12 pt-7">{children}</main>
       </div>
     </div>

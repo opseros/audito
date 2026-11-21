@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: { default: "AuditMesh", template: "%s · AuditMesh" },
-  description: "One network for everyone in the audit: organizations, auditors and consultants.",
+  title: { default: "AuditOps · Compliance Operations Platform", template: "%s · AuditOps" },
+  description: "AuditOps is the compliance operations platform where organizations, auditors and consultants run audits together.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

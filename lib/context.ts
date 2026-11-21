@@ -92,7 +92,7 @@ export const getContext = cache(async (): Promise<AppContext | null> => {
   }
 
   const actorLabel = support
-    ? `${user.name} (AuditMesh support)`
+    ? `${user.name} (AuditOps support)`
     : actingFrom
       ? `${actingFrom.name} on behalf of ${tenant?.name}`
       : `${user.name}${tenant ? ` · ${tenant.name}` : ""}`;

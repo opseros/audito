@@ -1,3 +1,4 @@
+import { LogoMark } from "@/components/brand";
 import { requireWorkspace } from "@/lib/context";
 import { signOutAction } from "@/app/(auth)/actions";
 import { stopActingAction, switchWorkspaceAction } from "@/app/app/actions";
@@ -49,7 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const options = ctx.memberships.map((m) => ({ value: m.tenant.id, label: `${m.tenant.name} · ${KIND[m.tenant.type].label}` }));
   if (ctx.actingFrom || ctx.support) options.unshift({ value: ctx.tenant.id, label: `${ctx.tenant.name} · ${ctx.support ? "support" : "client"}` });
-  if (ctx.user.isSuperAdmin) options.push({ value: "admin", label: "AuditMesh · Super admin" });
+  if (ctx.user.isSuperAdmin) options.push({ value: "admin", label: "AuditOps · Super admin" });
 
   const nav = [...NAV[kind], ...(ctx.support ? [] : COMMON)];
 
@@ -57,7 +58,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="font-display text-lg font-bold">AuditMesh</span>
+          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
           <WorkspaceSwitcher options={options} current={ctx.tenant.id} action={switchWorkspaceAction} />
         </div>
         <div className="flex items-center gap-3">
@@ -86,7 +87,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {ctx.support && (
         <div className="flex flex-wrap items-center justify-between gap-3 bg-admin-tint px-6 py-2.5 text-sm font-medium text-admin-ink">
           <span>
-            AuditMesh support session in <strong>{ctx.tenant.name}</strong> · read-only · reason: {ctx.support.reason}
+            AuditOps support session in <strong>{ctx.tenant.name}</strong> · read-only · reason: {ctx.support.reason}
           </span>
           <form action={endSupportAction}>
             <button className="btn btn-sm">End session</button>

@@ -43,7 +43,7 @@ with sync_playwright() as p:
 
     # 1. landing
     page.goto(BASE)
-    check("landing renders", page.locator("h1").inner_text().startswith("One network"))
+    check("landing renders", page.locator("h1").inner_text().startswith("Run every audit"))
     page.screenshot(path="/home/claude/shots/01-landing.png", full_page=True)
 
     # 2. sign up new organization
@@ -153,7 +153,7 @@ with sync_playwright() as p:
     signout(page)
 
     # 6. super admin
-    signin(page, "admin@auditmesh.test")
+    signin(page, "admin@auditops.test")
     page.goto(BASE + "/admin/verification")
     page.click("button:has-text('Approve')")
     try:

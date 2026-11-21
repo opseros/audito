@@ -1,4 +1,4 @@
-# AuditMesh
+# AuditOps
 
 One network for everyone in the audit. Organizations get audit-ready, auditors run fieldwork, and consultants manage
 every client, all in shared engagement rooms.
@@ -25,7 +25,7 @@ Demo accounts (password = `SEED_DEMO_PASSWORD`):
 | `dev@northwind.test` | Member, Northwind Labs |
 | `riya@ledgerline.test` | Owner, Ledgerline CPA (auditor) |
 | `asha@brightgate.test` | Owner, Brightgate Advisory (service provider) |
-| `admin@auditmesh.test` | Super admin (set `ALLOW_ADMIN_WITHOUT_MFA=true` locally, or turn on 2-step first) |
+| `admin@auditops.test` | Super admin (set `ALLOW_ADMIN_WITHOUT_MFA=true` locally, or turn on 2-step first) |
 
 Without `RESEND_API_KEY`, verification, reset and invitation emails are printed to the server log.
 
