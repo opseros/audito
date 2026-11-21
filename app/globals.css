@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply m-0 bg-canvas font-sans text-ink antialiased; }
+  h1, h2, h3 { @apply m-0 font-display; }
+}
+
+@layer components {
+  .card { @apply min-w-0 rounded-card border border-line bg-white p-5; }
+  .btn { @apply inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-hair disabled:cursor-not-allowed disabled:opacity-60; }
+  .btnp { @apply inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border-0 bg-org px-4 text-sm font-semibold text-white hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-60; }
+  .btn-sm { @apply min-h-8 px-3 text-[13px]; }
+  .pill { @apply inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold; }
+  .input { @apply w-full rounded-lg border border-field bg-white px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-org/20; }
+  .lbl { @apply flex flex-col gap-1.5 text-[13px] font-semibold text-label; }
+  .tbl { @apply w-full border-collapse text-sm; }
+  .tbl th { @apply border-b border-line px-2 py-2.5 text-left text-xs font-semibold text-muted; }
+  .tbl td { @apply border-b border-hair px-2 py-3 align-middle; }
+  .lnk { @apply cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold hover:underline; }
+}
