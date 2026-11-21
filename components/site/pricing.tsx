@@ -30,7 +30,7 @@ export function Pricing() {
               role="radio"
               aria-checked={currency === c}
               onClick={() => setCurrency(c)}
-              className={`rounded-md px-3 py-1 text-xs font-semibold ${currency === c ? "bg-[#0B1437] text-white" : "text-muted"}`}
+              className={`rounded-md px-3 py-1 text-xs font-semibold ${currency === c ? "bg-ink text-white" : "text-muted"}`}
             >
               {c === "INR" ? "₹ INR" : "$ USD"}
             </button>
@@ -85,9 +85,9 @@ export function Pricing() {
             </div>
             <div className="mt-7 flex flex-col gap-2">
               {t.cta.href.startsWith("mailto:") ? (
-                <a href={t.cta.href} className="btnp bg-[#0B1437]">{t.cta.label}</a>
+                <a href={t.cta.href} className="btn">{t.cta.label}</a>
               ) : (
-                <Link href={t.cta.href} className={t.highlight && segment.tiers.length > 1 ? "btnp bg-[#FACC15] text-[#0B1437]" : "btnp bg-[#0B1437]"}>
+                <Link href={t.cta.href} className={t.highlight && segment.tiers.length > 1 ? "btnp" : "btn"}>
                   {t.cta.label}
                 </Link>
               )}

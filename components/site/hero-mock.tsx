@@ -24,14 +24,14 @@ export function HeroMock() {
   const iso = 44 + done * 12;
   return (
     <div className="relative w-full max-w-[560px] animate-float" aria-hidden="true">
-      <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(250,204,21,0.18),transparent)]" />
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white text-left text-ink shadow-[0_40px_90px_-30px_rgba(0,0,0,0.6)]">
+      <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(43,74,203,0.18),transparent)]" />
+      <div className="overflow-hidden rounded-2xl border border-line bg-white text-left text-ink shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
         <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#F87171]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#FBBF24]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#34D399]" />
-            <span className="ml-2 rounded bg-[#FACC15] px-1.5 py-0.5 text-[10px] font-bold text-[#0B1437]">Northwind Labs</span>
+            <span className="ml-2 rounded bg-org-tint px-1.5 py-0.5 text-[10px] font-bold text-org-ink">Northwind Labs</span>
           </div>
           <span className="flex items-center gap-1.5 text-[10px] font-semibold text-auditor-ink">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-auditor" /> Live demo

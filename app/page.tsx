@@ -8,7 +8,7 @@ import { Reveal } from "@/components/site/motion";
 
 export const metadata = { title: "AuditOps · Compliance Operations Platform" };
 
-const NAVY = "#0B1437";
+const INK = "#0F172A"; // dark sections use the app ink colour
 
 const AUDIENCES = [
   {
@@ -63,7 +63,7 @@ const SECURITY = [
 function Tick({ light = false }: { light?: boolean }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-0.5 flex-none">
-      <path d="M3.5 8.5l3 3 6-7" stroke={light ? "#FACC15" : "#0F6B5C"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.5 8.5l3 3 6-7" stroke={light ? "#9DB0F5" : "#0F6B5C"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -84,33 +84,30 @@ export default function Home() {
       <SiteHeader />
 
       {/* ---------------------------------------------------------------- hero */}
-      <section className="relative overflow-hidden text-white" style={{ background: NAVY }}>
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_85%_10%,rgba(43,74,203,0.55),transparent_60%),radial-gradient(40%_60%_at_100%_100%,rgba(15,107,92,0.35),transparent_60%)]" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(70%_70%_at_60%_40%,black,transparent)]" />
+      <section className="relative overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_70%_at_60%_30%,black,transparent)]" />
+        <div aria-hidden className="pointer-events-none absolute -top-40 right-0 h-[560px] w-[760px] animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(43,74,203,0.22),transparent)]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-40 left-0 h-[420px] w-[560px] animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(15,107,92,0.12),transparent)]" />
         <div className="relative mx-auto grid max-w-[1180px] items-center gap-12 px-6 pb-24 pt-16 lg:grid-cols-[1fr_1.05fr] lg:pt-24">
           <div className="flex animate-fade-up flex-col items-start gap-6">
-            <span className="rounded-full bg-[#FACC15]/15 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-[#FACC15] ring-1 ring-[#FACC15]/30">
-              {SITE.tagline}
-            </span>
+            <span className="pill bg-org-tint px-3 py-1.5 text-[11px] tracking-[0.14em] text-org-ink">{SITE.tagline}</span>
             <h1 className="text-[42px] font-bold leading-[1.04] tracking-tight md:text-[58px]">
               Every audit,
               <br />
-              <span className="text-[#FACC15]">one room.</span>
+              <span className="bg-gradient-to-r from-org via-[#5B4BD6] to-auditor bg-clip-text text-transparent">one room.</span>
             </h1>
-            <p className="m-0 max-w-[520px] text-[17px] leading-relaxed text-slate-300">
+            <p className="m-0 max-w-[520px] text-[17px] leading-relaxed text-muted">
               AuditOps brings the company being audited, its auditor and its consultants into one platform. Track every
               control across frameworks, collect evidence once, and run fieldwork in a shared engagement room where each
               party sees only what it should.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className="rounded-lg bg-[#FACC15] px-6 py-3 text-[15px] font-bold text-[#0B1437] shadow-[0_12px_30px_-10px_rgba(250,204,21,0.6)] hover:brightness-95">
+              <Link href="/signup" className="btnp min-h-12 px-6 text-[15px] shadow-[0_10px_30px_-10px_rgba(43,74,203,0.7)]">
                 Start free
               </Link>
-              <a href="#demo" className="rounded-lg border border-white/25 px-6 py-3 text-[15px] font-semibold text-white hover:bg-white/10">
-                Try the live demo
-              </a>
+              <a href="#demo" className="btn min-h-12 px-6 text-[15px]">Try the live demo</a>
             </div>
-            <span className="text-xs text-slate-400">Free to create a workspace · no card needed · sign up with Google or Microsoft</span>
+            <span className="text-xs text-muted">Free to create a workspace · no card needed · sign up with Google or Microsoft</span>
           </div>
           <div className="flex animate-fade-up justify-center [animation-delay:150ms] lg:justify-end">
             <HeroMock />
@@ -156,11 +153,11 @@ export default function Home() {
             <div
               key={a.eyebrow}
               className={`flex flex-col gap-4 rounded-2xl p-7 transition duration-300 hover:-translate-y-1 ${
-                a.dark ? "text-white shadow-[0_24px_60px_-28px_rgba(11,20,55,0.8)]" : "border border-line bg-white"
+                a.dark ? "text-white shadow-[0_24px_60px_-28px_rgba(15,23,42,0.8)]" : "border border-line bg-white"
               }`}
-              style={a.dark ? { background: NAVY } : undefined}
+              style={a.dark ? { background: INK } : undefined}
             >
-              <span className={`text-[11px] font-bold tracking-[0.14em] ${a.dark ? "text-[#FACC15]" : "text-org"}`}>{a.eyebrow}</span>
+              <span className={`text-[11px] font-bold tracking-[0.14em] ${a.dark ? "text-[#9DB0F5]" : "text-org"}`}>{a.eyebrow}</span>
               <h3 className="text-[21px] font-bold leading-snug">{a.title}</h3>
               <p className={`m-0 text-sm leading-relaxed ${a.dark ? "text-slate-300" : "text-muted"}`}>{a.body}</p>
               <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
@@ -173,8 +170,8 @@ export default function Home() {
               </ul>
               <Link
                 href={a.cta[1]}
-                className={`mt-auto self-start rounded-lg px-4 py-2.5 text-sm font-bold ${a.dark ? "bg-[#FACC15] text-[#0B1437]" : "text-white"}`}
-                style={a.dark ? undefined : { background: NAVY }}
+                className={`mt-auto self-start rounded-lg px-4 py-2.5 text-sm font-bold ${a.dark ? "bg-org text-white" : "text-white"}`}
+                style={a.dark ? undefined : { background: INK }}
               >
                 {a.cta[0]}
               </Link>
@@ -218,7 +215,7 @@ export default function Home() {
           <Reveal delay={100} className="grid gap-5 md:grid-cols-3">
             {STEPS.map(([t, b], i) => (
               <div key={t} className="relative rounded-2xl border border-line bg-white p-6 pt-9">
-                <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: NAVY }}>
+                <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: INK }}>
                   {i + 1}
                 </span>
                 <h3 className="text-[17px] font-bold">{t}</h3>
@@ -245,7 +242,7 @@ export default function Home() {
           </Reveal>
         </div>
         <Reveal delay={150}>
-          <div className="rounded-2xl p-7 text-white shadow-[0_30px_70px_-30px_rgba(11,20,55,0.8)]" style={{ background: NAVY }}>
+          <div className="rounded-2xl p-7 text-white shadow-[0_30px_70px_-30px_rgba(15,23,42,0.8)]" style={{ background: INK }}>
             <h3 className="text-xl font-bold">Start free today</h3>
             <p className="m-0 mt-1 text-sm text-slate-300">Create a workspace for your company, your firm or your clients.</p>
             <dl className="m-0 mt-6 divide-y divide-white/10 text-sm">
@@ -258,11 +255,11 @@ export default function Home() {
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 py-3">
                   <dt className="text-slate-300">{k}</dt>
-                  <dd className="m-0 font-semibold text-[#FACC15]">{v}</dd>
+                  <dd className="m-0 font-semibold text-[#9DB0F5]">{v}</dd>
                 </div>
               ))}
             </dl>
-            <Link href="/signup" className="mt-6 block rounded-lg bg-[#FACC15] py-3 text-center text-sm font-bold text-[#0B1437] hover:brightness-95">
+            <Link href="/signup" className="mt-6 block rounded-lg bg-org py-3 text-center text-sm font-bold text-white hover:brightness-110">
               Start free
             </Link>
             <p className="m-0 mt-3 text-xs text-slate-400">
@@ -300,32 +297,32 @@ export default function Home() {
       </section>
 
       {/* ---------------------------------------------------------------- cta */}
-      <section className="relative overflow-hidden text-white" style={{ background: NAVY }}>
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_50%_0%,rgba(43,74,203,0.45),transparent_70%)]" />
-        <div className="relative mx-auto flex max-w-[900px] flex-col items-center gap-5 px-6 py-20 text-center">
-          <h2 className="text-[32px] font-bold leading-tight md:text-[42px]">Put your next audit in <span className="text-[#FACC15]">one room</span></h2>
-          <p className="m-0 max-w-[560px] text-[16px] text-slate-300">Controls, evidence, requests and findings, shared by the company, its auditor and its consultants.</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/signup?as=organization" className="rounded-lg bg-[#FACC15] px-5 py-3 text-sm font-bold text-[#0B1437] hover:brightness-95">Start as organization</Link>
-            <Link href="/signup?as=auditor" className="rounded-lg border border-white/25 px-5 py-3 text-sm font-semibold hover:bg-white/10">Join as auditor</Link>
-            <Link href="/signin" className="rounded-lg border border-white/25 px-5 py-3 text-sm font-semibold hover:bg-white/10">Log in</Link>
+      <section className="mx-auto max-w-[1180px] px-6 pb-20">
+        <div className="relative flex flex-col items-center gap-5 overflow-hidden rounded-[20px] bg-org px-6 py-16 text-center text-white">
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_50%_0%,rgba(255,255,255,0.18),transparent_70%)]" />
+          <h2 className="relative text-[30px] font-bold leading-tight md:text-[40px]">Put your next audit in one room</h2>
+          <p className="relative m-0 max-w-[560px] text-[16px] text-white/80">Controls, evidence, requests and findings, shared by the company, its auditor and its consultants.</p>
+          <div className="relative flex flex-wrap justify-center gap-3">
+            <Link href="/signup?as=organization" className="btn min-h-12 border-white px-5 text-org">Start as organization</Link>
+            <Link href="/signup?as=auditor" className="btnp min-h-12 border border-white/40 bg-transparent px-5">Join as auditor</Link>
+            <Link href="/signin" className="btnp min-h-12 border border-white/40 bg-transparent px-5">Log in</Link>
           </div>
         </div>
       </section>
 
       {/* ---------------------------------------------------------------- footer */}
-      <footer className="text-slate-400" style={{ background: "#081030" }}>
+      <footer className="border-t border-line bg-white text-muted">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs">
           <div className="flex items-center gap-4">
-            <Logo dark />
+            <Logo />
             <span>© {new Date().getFullYear()} Opseros. {SITE.name} {SITE.by}.</span>
           </div>
           <nav aria-label="Footer" className="flex flex-wrap gap-5">
-            <a href="#pricing" className="hover:text-white">Pricing</a>
-            <a href="#security" className="hover:text-white">Security</a>
-            <Link href="/signin" className="hover:text-white">Log in</Link>
-            <Link href="/signup" className="hover:text-white">Sign up</Link>
-            <a href={`mailto:${SITE.contactEmail}`} className="hover:text-white">Contact</a>
+            <a href="#pricing" className="hover:text-ink">Pricing</a>
+            <a href="#security" className="hover:text-ink">Security</a>
+            <Link href="/signin" className="hover:text-ink">Log in</Link>
+            <Link href="/signup" className="hover:text-ink">Sign up</Link>
+            <a href={`mailto:${SITE.contactEmail}`} className="hover:text-ink">Contact</a>
           </nav>
         </div>
       </footer>
