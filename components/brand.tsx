@@ -10,15 +10,45 @@ export function LogoMark({ size = 28 }: { size?: number }) {
   );
 }
 
-export function Logo({ href = "/", tagline = false }: { href?: string; tagline?: boolean }) {
+export function Logo({ href = "/", tagline = false, dark = false }: { href?: string; tagline?: boolean; dark?: boolean }) {
   return (
-    <Link href={href} className="flex items-center gap-2.5 text-ink no-underline">
+    <Link href={href} className={`flex items-center gap-2.5 no-underline ${dark ? "text-white" : "text-ink"}`}>
       <LogoMark />
       <span className="flex flex-col leading-none">
         <span className="font-display text-xl font-bold">{SITE.name}</span>
-        {tagline && <span className="mt-1 text-[9.5px] font-semibold tracking-[0.14em] text-muted">{SITE.tagline}</span>}
+        {tagline && (
+          <span className={`mt-1 hidden text-[9.5px] font-semibold tracking-[0.14em] sm:block ${dark ? "text-[#FACC15]" : "text-muted"}`}>{SITE.tagline}</span>
+        )}
       </span>
     </Link>
+  );
+}
+
+export function SiteHeader() {
+  const links = [
+    ["#who", "Who it's for"],
+    ["#demo", "Live demo"],
+    ["#features", "Features"],
+    ["#how", "How it works"],
+    ["#security", "Security"],
+    ["#pricing", "Pricing"],
+    ["#faq", "FAQ"],
+  ];
+  return (
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0B1437]/90 backdrop-blur">
+      <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-6 py-3">
+        <Logo tagline dark />
+        <nav aria-label="Site" className="hidden items-center gap-6 text-[13px] font-medium text-slate-300 lg:flex">
+          {links.map(([h, l]) => (
+            <a key={h} href={h} className="transition hover:text-white">{l}</a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link href="/signin" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">Log in</Link>
+          <Link href="/signup" className="whitespace-nowrap rounded-lg bg-[#FACC15] px-4 py-2 text-sm font-bold text-[#0B1437] hover:brightness-95">Start free</Link>
+        </div>
+      </div>
+    </header>
   );
 }
 
