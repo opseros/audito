@@ -1,0 +1,1104 @@
+From a20d1143f6a1d7677c858929c81c091a2ee7834c Mon Sep 17 00:00:00 2001
+From: AuditOps <dev@auditmesh.local>
+Date: Sat, 21 Nov 2026 09:06:25 +0000
+Subject: [PATCH] Rebrand to AuditOps and build out the product homepage
+
+- AuditOps name, new logo mark and 'COMPLIANCE OPERATIONS PLATFORM' tagline
+- Homepage: hero with product preview, proof points, workspaces, features,
+  how it works, security, pricing, FAQ, CTA and footer
+- Site content and plans in lib/site.ts
+- Crypto key label kept as 'auditmesh:' so stored MFA secrets stay valid
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01C1pAKTDBdroaEvQsUdahDj
+---
+ .env.example                      |   6 +-
+ DEPLOY.md                         |  10 +-
+ README.md                         |   4 +-
+ app/(auth)/actions.ts             |   4 +-
+ app/(auth)/signin/page.tsx        |   4 +-
+ app/account/layout.tsx            |   3 +-
+ app/admin/layout.tsx              |   7 +-
+ app/admin/overview/page.tsx       |   2 +-
+ app/app/actions.ts                |   2 +-
+ app/app/layout.tsx                |   7 +-
+ app/app/marketplace/page.tsx      |   2 +-
+ app/app/partners/page.tsx         |   2 +-
+ app/globals.css                   |   1 +
+ app/layout.tsx                    |   4 +-
+ app/page.tsx                      | 355 +++++++++++++++++++++++++++---
+ components/app/forms.tsx          |   2 +-
+ components/auth/oauth-buttons.tsx |   2 +-
+ components/brand.tsx              |  47 ++--
+ lib/auth/flow.ts                  |   4 +-
+ lib/auth/mfa.ts                   |   2 +-
+ lib/context.ts                    |   2 +-
+ lib/crypto.ts                     |   1 +
+ lib/env.ts                        |   2 +-
+ lib/permissions.ts                |   2 +-
+ lib/site.ts                       | 105 +++++++++
+ package.json                      |   2 +-
+ scripts/create-super-admin.ts     |   2 +-
+ scripts/seed.ts                   |   8 +-
+ tailwind.config.ts                |   2 +-
+ tests/e2e.py                      |   4 +-
+ 30 files changed, 511 insertions(+), 89 deletions(-)
+ create mode 100644 lib/site.ts
+
+diff --git a/.env.example b/.env.example
+index c2a08e4..f9a3f85 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,8 +1,8 @@
+ # --- Database (Neon) -------------------------------------------------------
+ # Pooled connection string (host contains "-pooler"), used by the app.
+-DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/auditmesh?sslmode=require
++DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+ # Direct connection string, used by migrations.
+-DATABASE_URL_UNPOOLED=postgresql://user:password@ep-xxx.region.aws.neon.tech/auditmesh?sslmode=require
++DATABASE_URL_UNPOOLED=postgresql://user:password@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
+ 
+ # --- App -------------------------------------------------------------------
+ APP_URL=http://localhost:3000
+@@ -25,7 +25,7 @@ TURNSTILE_SECRET_KEY=
+ 
+ # --- Email (Resend). Empty = links are printed to the server log. ------------
+ RESEND_API_KEY=
+-EMAIL_FROM="AuditMesh <no-reply@yourdomain.com>"
++EMAIL_FROM="AuditOps <no-reply@yourdomain.com>"
+ 
+ # --- Seed ----------------------------------------------------------------------
+ # Password for demo accounts created by `npm run db:seed`. Do not seed in production.
+diff --git a/DEPLOY.md b/DEPLOY.md
+index 2f631f1..c9f2e69 100644
+--- a/DEPLOY.md
++++ b/DEPLOY.md
+@@ -1,4 +1,4 @@
+-# Deploying AuditMesh (Vercel + Neon)
++# Deploying AuditOps (Vercel + Neon)
+ 
+ ## 1. Neon database
+ 
+@@ -12,8 +12,8 @@
+ ## 2. Repository
+ 
+ ```bash
+-git init && git add -A && git commit -m "AuditMesh"
+-git remote add origin git@github.com:<you>/auditmesh.git
++git init && git add -A && git commit -m "AuditOps"
++git remote add origin git@github.com:<you>/auditops.git
+ git push -u origin main
+ ```
+ 
+@@ -58,7 +58,7 @@ Then deploy. `NEXT_PUBLIC_*` values are build-time, so redeploy after changing t
+ 
+ Google Cloud Console → APIs & Services:
+ 
+-1. **OAuth consent screen:** External, app name AuditMesh, scopes `openid email profile`.
++1. **OAuth consent screen:** External, app name AuditOps, scopes `openid email profile`.
+ 2. **Credentials → Create OAuth client ID → Web application:**
+    - Authorized JavaScript origin: `https://your-domain`
+    - Authorized redirect URI: `https://your-domain/api/auth/oauth/google/callback`
+@@ -90,7 +90,7 @@ The CSP already allows `challenges.cloudflare.com`.
+ ## 9. Email (Resend)
+ 
+ 1. Add and verify your sending domain in Resend (DNS records).
+-2. Set `RESEND_API_KEY` and `EMAIL_FROM="AuditMesh <no-reply@your-domain>"`.
++2. Set `RESEND_API_KEY` and `EMAIL_FROM="AuditOps <no-reply@your-domain>"`.
+ 
+ ## 10. Smoke test after deploy
+ 
+diff --git a/README.md b/README.md
+index 743157e..b752aed 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# AuditMesh
++# AuditOps
+ 
+ One network for everyone in the audit. Organizations get audit-ready, auditors run fieldwork, and consultants manage
+ every client, all in shared engagement rooms.
+@@ -25,7 +25,7 @@ Demo accounts (password = `SEED_DEMO_PASSWORD`):
+ | `dev@northwind.test` | Member, Northwind Labs |
+ | `riya@ledgerline.test` | Owner, Ledgerline CPA (auditor) |
+ | `asha@brightgate.test` | Owner, Brightgate Advisory (service provider) |
+-| `admin@auditmesh.test` | Super admin (set `ALLOW_ADMIN_WITHOUT_MFA=true` locally, or turn on 2-step first) |
++| `admin@auditops.test` | Super admin (set `ALLOW_ADMIN_WITHOUT_MFA=true` locally, or turn on 2-step first) |
+ 
+ Without `RESEND_API_KEY`, verification, reset and invitation emails are printed to the server log.
+ 
+diff --git a/app/(auth)/actions.ts b/app/(auth)/actions.ts
+index 4531735..829f8b2 100644
+--- a/app/(auth)/actions.ts
++++ b/app/(auth)/actions.ts
+@@ -80,7 +80,7 @@ export async function signUpAction(_: FormState, form: FormData): Promise<FormSt
+     await sendEmail(
+       email.data,
+       "Someone tried to sign up with your email",
+-      `An AuditMesh account already exists for this address. Sign in at ${env.appUrl}/signin or reset your password at ${env.appUrl}/forgot-password.`
++      `An AuditOps account already exists for this address. Sign in at ${env.appUrl}/signin or reset your password at ${env.appUrl}/forgot-password.`
+     );
+     return { ok: "Check your inbox to continue." };
+   }
+@@ -164,7 +164,7 @@ export async function forgotPasswordAction(_: FormState, form: FormData): Promis
+     const token = await issueToken(user.id, "password_reset", 60);
+     await sendEmail(
+       user.email,
+-      "Reset your AuditMesh password",
++      "Reset your AuditOps password",
+       `Reset your password: ${env.appUrl}/reset-password?token=${token}\n\nThe link expires in 1 hour. If you did not ask for this, ignore this email.`
+     );
+   }
+diff --git a/app/(auth)/signin/page.tsx b/app/(auth)/signin/page.tsx
+index b4bf533..d2c4834 100644
+--- a/app/(auth)/signin/page.tsx
++++ b/app/(auth)/signin/page.tsx
+@@ -35,13 +35,13 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
+         <OAuthButtons next={sp.next} />
+         <SignInForm next={sp.next} notice={notice} />
+         <span className="text-[13px] text-muted">
+-          New to AuditMesh?{" "}
++          New to AuditOps?{" "}
+           <Link href="/signup" className="font-semibold text-org hover:underline">
+             Create a workspace
+           </Link>
+         </span>
+       </div>
+-      <p className="text-center text-xs text-muted">Super admin accounts are created by AuditMesh only, never through sign-up.</p>
++      <p className="text-center text-xs text-muted">Super admin accounts are created by AuditOps only, never through sign-up.</p>
+     </section>
+   );
+ }
+diff --git a/app/account/layout.tsx b/app/account/layout.tsx
+index 71639f9..77ae9b1 100644
+--- a/app/account/layout.tsx
++++ b/app/account/layout.tsx
+@@ -1,3 +1,4 @@
++import { LogoMark } from "@/components/brand";
+ import Link from "next/link";
+ import { requireAccount } from "@/lib/context";
+ import { signOutAction } from "@/app/(auth)/actions";
+@@ -10,7 +11,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
+     <div className="min-h-screen">
+       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
+         <div className="flex items-center gap-4">
+-          <span className="font-display text-lg font-bold">AuditMesh</span>
++          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
+           <Link href={ctx.tenant ? "/app" : ctx.user.isSuperAdmin ? "/admin" : "/welcome"} className="text-sm font-semibold text-org hover:underline">
+             ← Back to workspace
+           </Link>
+diff --git a/app/admin/layout.tsx b/app/admin/layout.tsx
+index ddbbcff..4771d3f 100644
+--- a/app/admin/layout.tsx
++++ b/app/admin/layout.tsx
+@@ -1,3 +1,4 @@
++import { LogoMark } from "@/components/brand";
+ import { requireSuperAdmin } from "@/lib/context";
+ import { signOutAction } from "@/app/(auth)/actions";
+ import { switchWorkspaceAction } from "@/app/app/actions";
+@@ -19,14 +20,14 @@ const NAV = [
+ export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+   const ctx = await requireSuperAdmin();
+   const options = [
+-    { value: "admin", label: "AuditMesh · Super admin" },
++    { value: "admin", label: "AuditOps · Super admin" },
+     ...ctx.memberships.map((m) => ({ value: m.tenant.id, label: m.tenant.name })),
+   ];
+   return (
+     <div className="min-h-screen">
+       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
+         <div className="flex flex-wrap items-center gap-4">
+-          <span className="font-display text-lg font-bold">AuditMesh</span>
++          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
+           <WorkspaceSwitcher options={options} current="admin" action={switchWorkspaceAction} />
+         </div>
+         <div className="flex items-center gap-3">
+@@ -36,7 +37,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
+         </div>
+       </header>
+       <div className="flex min-h-[calc(100vh-65px)] flex-wrap md:flex-nowrap">
+-        <SideNav title="AuditMesh platform" items={NAV} tint="#EDE9FE" ink="#4C1D95" />
++        <SideNav title="AuditOps platform" items={NAV} tint="#EDE9FE" ink="#4C1D95" />
+         <main className="box-border flex min-w-0 flex-[999_1_560px] flex-col gap-6 px-8 pb-12 pt-7">{children}</main>
+       </div>
+     </div>
+diff --git a/app/admin/overview/page.tsx b/app/admin/overview/page.tsx
+index c0bd7f3..720b3a6 100644
+--- a/app/admin/overview/page.tsx
++++ b/app/admin/overview/page.tsx
+@@ -28,7 +28,7 @@ export default async function AdminOverview() {
+ 
+   return (
+     <>
+-      <PageTitle eyebrow="AuditMesh platform" title="Platform overview" />
++      <PageTitle eyebrow="AuditOps platform" title="Platform overview" />
+       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+         {kpis.map((k) => (
+           <Link key={k.label} href={k.href} className="card flex flex-col gap-1.5 text-ink no-underline hover:border-field">
+diff --git a/app/app/actions.ts b/app/app/actions.ts
+index 3d3be29..375c61f 100644
+--- a/app/app/actions.ts
++++ b/app/app/actions.ts
+@@ -206,7 +206,7 @@ export async function inviteMemberAction(_: FormState, form: FormData) {
+     });
+     await sendEmail(
+       email.data,
+-      `${ctx.user.name} invited you to ${ctx.tenant.name} on AuditMesh`,
++      `${ctx.user.name} invited you to ${ctx.tenant.name} on AuditOps`,
+       `Join ${ctx.tenant.name} as ${role}: ${env.appUrl}/invite/${token}\n\nThe link expires in 7 days.`
+     );
+     await log(ctx, "team.invited", `invited ${email.data} as ${role}`);
+diff --git a/app/app/layout.tsx b/app/app/layout.tsx
+index 5bc76e1..e735659 100644
+--- a/app/app/layout.tsx
++++ b/app/app/layout.tsx
+@@ -1,3 +1,4 @@
++import { LogoMark } from "@/components/brand";
+ import { requireWorkspace } from "@/lib/context";
+ import { signOutAction } from "@/app/(auth)/actions";
+ import { stopActingAction, switchWorkspaceAction } from "@/app/app/actions";
+@@ -49,7 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
+ 
+   const options = ctx.memberships.map((m) => ({ value: m.tenant.id, label: `${m.tenant.name} · ${KIND[m.tenant.type].label}` }));
+   if (ctx.actingFrom || ctx.support) options.unshift({ value: ctx.tenant.id, label: `${ctx.tenant.name} · ${ctx.support ? "support" : "client"}` });
+-  if (ctx.user.isSuperAdmin) options.push({ value: "admin", label: "AuditMesh · Super admin" });
++  if (ctx.user.isSuperAdmin) options.push({ value: "admin", label: "AuditOps · Super admin" });
+ 
+   const nav = [...NAV[kind], ...(ctx.support ? [] : COMMON)];
+ 
+@@ -57,7 +58,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
+     <div className="min-h-screen">
+       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-6 py-3">
+         <div className="flex flex-wrap items-center gap-4">
+-          <span className="font-display text-lg font-bold">AuditMesh</span>
++          <span className="flex items-center gap-2 font-display text-lg font-bold"><LogoMark size={24} />AuditOps</span>
+           <WorkspaceSwitcher options={options} current={ctx.tenant.id} action={switchWorkspaceAction} />
+         </div>
+         <div className="flex items-center gap-3">
+@@ -86,7 +87,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
+       {ctx.support && (
+         <div className="flex flex-wrap items-center justify-between gap-3 bg-admin-tint px-6 py-2.5 text-sm font-medium text-admin-ink">
+           <span>
+-            AuditMesh support session in <strong>{ctx.tenant.name}</strong> · read-only · reason: {ctx.support.reason}
++            AuditOps support session in <strong>{ctx.tenant.name}</strong> · read-only · reason: {ctx.support.reason}
+           </span>
+           <form action={endSupportAction}>
+             <button className="btn btn-sm">End session</button>
+diff --git a/app/app/marketplace/page.tsx b/app/app/marketplace/page.tsx
+index b74015f..aebd18c 100644
+--- a/app/app/marketplace/page.tsx
++++ b/app/app/marketplace/page.tsx
+@@ -20,7 +20,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
+   return (
+     <>
+       <PageTitle title="Marketplace" />
+-      <Lead>Find auditors, certification bodies, QSAs, 3PAOs and consultants. Audit firms are listed only after AuditMesh verifies their credentials.</Lead>
++      <Lead>Find auditors, certification bodies, QSAs, 3PAOs and consultants. Audit firms are listed only after AuditOps verifies their credentials.</Lead>
+       <div className="flex flex-wrap gap-2">
+         {Object.keys(TYPES).map((t) => (
+           <Chip key={t} href={`/app/marketplace${t === "All" ? "" : `?type=${encodeURIComponent(t)}`}`} on={type === t}>{t}</Chip>
+diff --git a/app/app/partners/page.tsx b/app/app/partners/page.tsx
+index d419ef3..94a2811 100644
+--- a/app/app/partners/page.tsx
++++ b/app/app/partners/page.tsx
+@@ -12,7 +12,7 @@ export default async function Partners() {
+   return (
+     <>
+       <PageTitle title="Auditor partners" />
+-      <Lead>Verified audit firms on AuditMesh. Referrals with an independence check are coming soon: you will not be able to refer a client to a firm you also consult for on the same scope.</Lead>
++      <Lead>Verified audit firms on AuditOps. Referrals with an independence check are coming soon: you will not be able to refer a client to a firm you also consult for on the same scope.</Lead>
+       {firms.length === 0 && <Empty>No verified firms yet.</Empty>}
+       <div className="flex flex-col gap-3">
+         {firms.map((f) => (
+diff --git a/app/globals.css b/app/globals.css
+index eb75fe2..16ec3af 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -3,6 +3,7 @@
+ @tailwind utilities;
+ 
+ @layer base {
++  html { scroll-behavior: smooth; }
+   body { @apply m-0 bg-canvas font-sans text-ink antialiased; }
+   h1, h2, h3 { @apply m-0 font-display; }
+ }
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 6a73e6d..9f43561 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -2,8 +2,8 @@ import "./globals.css";
+ import type { Metadata } from "next";
+ 
+ export const metadata: Metadata = {
+-  title: { default: "AuditMesh", template: "%s · AuditMesh" },
+-  description: "One network for everyone in the audit: organizations, auditors and consultants.",
++  title: { default: "AuditOps · Compliance Operations Platform", template: "%s · AuditOps" },
++  description: "AuditOps is the compliance operations platform where organizations, auditors and consultants run audits together.",
+ };
+ 
+ export default function RootLayout({ children }: { children: React.ReactNode }) {
+diff --git a/app/page.tsx b/app/page.tsx
+index a6ba15b..2c733fd 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -1,66 +1,359 @@
+ import Link from "next/link";
+-import { PublicHeader } from "@/components/brand";
++import { Logo, PublicHeader } from "@/components/brand";
++import { FAQ, PLANS, SITE } from "@/lib/site";
+ 
+-const ROLE_CARDS = [
++export const metadata = { title: "AuditOps · Compliance Operations Platform" };
++
++const FRAMEWORKS = ["SOC 2", "SOC 1", "ISO 27001", "PCI DSS 4.0", "HIPAA", "FedRAMP 20x", "DPDP (India)", "GDPR", "ISO 42001"];
++
++const ROLES = [
+   {
+     kind: "organization",
+-    title: "Organization",
+-    desc: "Getting certified. Connect tools, track controls across frameworks, answer auditor requests in one place.",
+-    points: ["Readiness score per framework", "Auto-collected evidence", "Hire auditors and consultants"],
++    title: "Organizations",
++    desc: "Getting certified. Track every control across frameworks, collect evidence once, and answer auditor requests in one place.",
++    points: ["Readiness score per framework", "One control, many frameworks", "Hire auditors and consultants"],
+     cta: "Start as organization",
+     color: "#2B4ACB",
++    tint: "bg-org-tint text-org-ink",
+   },
+   {
+     kind: "auditor",
+-    title: "Auditor / Certification body",
+-    desc: "CPA firms, ISO registrars, QSAs, 3PAOs. Run engagements, sample, review evidence, issue findings.",
+-    points: ["Request lists and sampling", "Workpapers with sign-off", "Leads from marketplace"],
++    title: "Auditors & certification bodies",
++    desc: "CPA firms, ISO registrars, QSAs and 3PAOs. Run fieldwork, sample populations, review evidence and issue findings.",
++    points: ["Request lists and seeded sampling", "Workpapers with reviewer sign-off", "Verified listing and leads"],
+     cta: "Start as auditor",
+     color: "#0F6B5C",
++    tint: "bg-auditor-tint text-auditor-ink",
+   },
+   {
+     kind: "provider",
+-    title: "Service provider",
+-    desc: "vCISOs, consultants, MSPs. Manage many client organizations from one console, under your own brand.",
+-    points: ["Multi-client portfolio", "Reusable control packs", "White-label client portal"],
++    title: "Service providers",
++    desc: "vCISOs, consultants and MSPs. Manage every client from one console and work inside their workspace with logged access.",
++    points: ["Multi-client portfolio", "Contributor access granted by the client", "Join clients' audit rooms"],
+     cta: "Start as provider",
+     color: "#B4500F",
++    tint: "bg-provider-tint text-provider-ink",
+   },
+ ];
+ 
+-export default function Landing() {
++const FEATURES = [
++  { title: "Shared control library", body: "Each control maps to requirements in every framework you follow. Fix it once and readiness moves everywhere it counts." },
++  { title: "Live readiness scores", body: "See how close each framework is to audit-ready, which controls are failing, and who owns them." },
++  { title: "Evidence library", body: "Upload evidence once, link it to controls, and attach it to auditor requests. Every download is logged." },
++  { title: "Engagement rooms", body: "One room per audit for the company, its auditor and its consultant: requests, threads, evidence, findings and a timeline." },
++  { title: "Sampling built in", body: "Auditors draw a seeded random sample from a population. The seed and items are locked and reproducible." },
++  { title: "Workpapers and internal notes", body: "Auditor-only notes and workpapers with reviewer sign-off. Clients and consultants never see them." },
++  { title: "Consultant access, done safely", body: "Grant a provider contributor access. They work in your workspace under their own name and you can revoke it any time." },
++  { title: "Verified marketplace", body: "Find audit firms whose credentials were checked against the issuing body, and request proposals with your readiness attached." },
++  { title: "Append-only audit trail", body: "Sign-ins, changes, support sessions and decisions are recorded. The database refuses edits and deletes." },
++];
++
++const STEPS = [
++  ["Create your workspace", "Sign up as an organization, audit firm or service provider and pick your frameworks."],
++  ["Get ready", "Work through the shared control library, assign owners and collect evidence."],
++  ["Bring in your auditor", "Request proposals from verified firms, or invite the firm you already work with."],
++  ["Run the audit in one room", "Requests, evidence, sampling and findings happen in one place, with every party's view kept apart."],
++];
++
++const SECURITY = [
++  ["Sign-in your way", "Work email and password, Google or Microsoft. Two-step verification with an authenticator app, mandatory if you choose."],
++  ["Bot protection", "Cloudflare Turnstile on sign-in, sign-up and password reset, plus rate limits on repeated attempts."],
++  ["Strong credentials", "Passwords hashed with argon2id. Session tokens stored only as hashes, revocable per device."],
++  ["Least privilege", "Owner, admin, member and viewer roles. Consultants get contributor access only. Every check runs on the server."],
++  ["Tenant isolation", "Each party sees only its own data and the engagement rooms it belongs to. Internal auditor notes stay with the auditor."],
++  ["Read-only support", "AuditOps staff can view a workspace only in a read-only session with a stated reason, recorded in the audit trail."],
++];
++
++function Check() {
++  return (
++    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-0.5 flex-none">
++      <path d="M3.5 8.5l3 3 6-7" stroke="#0F6B5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
++    </svg>
++  );
++}
++
++function ProductPreview() {
++  const fws = [
++    ["SOC 2", 86, "bg-auditor"],
++    ["ISO 27001", 64, "bg-org"],
++    ["PCI DSS 4.0", 41, "bg-provider"],
++  ] as const;
++  const reqs = [
++    ["Change tickets sample", "CC8.1", "Needs rework", "bg-danger-tint text-danger"],
++    ["Quarterly access review", "CC6.2", "Accepted", "bg-auditor-tint text-auditor-ink"],
++    ["Population: new hires", "CC1.4", "Submitted", "bg-org-tint text-org-ink"],
++  ] as const;
++  return (
++    <div className="relative mx-auto w-full max-w-[1040px]" aria-hidden="true">
++      <div className="absolute -inset-x-6 -bottom-6 -top-6 -z-10 rounded-[28px] bg-gradient-to-b from-org-tint/80 via-white to-transparent" />
++      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_60px_-20px_rgba(15,23,42,0.25)]">
++        <div className="flex items-center gap-2 border-b border-line px-4 py-3">
++          <span className="h-2.5 w-2.5 rounded-full bg-line" />
++          <span className="h-2.5 w-2.5 rounded-full bg-line" />
++          <span className="h-2.5 w-2.5 rounded-full bg-line" />
++          <span className="ml-3 text-xs text-muted">Northwind Labs · Audit readiness</span>
++        </div>
++        <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr]">
++          <div className="flex flex-col gap-3">
++            {fws.map(([name, pct, color]) => (
++              <div key={name} className="rounded-xl border border-line p-4 text-left">
++                <div className="flex justify-between text-sm font-semibold"><span>{name}</span><span className="font-display text-lg">{pct}%</span></div>
++                <div className="mt-2 h-2 overflow-hidden rounded bg-line"><div className={`h-2 rounded ${color}`} style={{ width: `${pct}%` }} /></div>
++              </div>
++            ))}
++          </div>
++          <div className="rounded-xl border border-line p-4 text-left">
++            <div className="mb-3 flex items-center justify-between">
++              <span className="text-sm font-bold">Engagement room · SOC 2 Type II</span>
++              <span className="pill bg-auditor text-white">Fieldwork</span>
++            </div>
++            {reqs.map(([t, c, s, cls]) => (
++              <div key={t} className="flex items-center justify-between gap-3 border-t border-hair py-2.5">
++                <span className="flex flex-col"><span className="text-sm font-semibold">{t}</span><span className="text-xs text-muted">{c}</span></span>
++                <span className={`pill ${cls}`}>{s}</span>
++              </div>
++            ))}
++            <div className="mt-2 flex gap-3 rounded-lg bg-auditor-soft p-3 text-xs text-auditor-ink">
++              <span className="font-bold">Internal note</span> Visible to the audit firm only.
++            </div>
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++}
++
++function Section({ id, eyebrow, title, lead, children }: { id?: string; eyebrow: string; title: string; lead?: string; children: React.ReactNode }) {
++  return (
++    <section id={id} className="mx-auto max-w-[1240px] scroll-mt-24 px-6 py-20 md:px-8">
++      <div className="mx-auto mb-12 max-w-[720px] text-center">
++        <span className="text-xs font-semibold tracking-[0.14em] text-org">{eyebrow}</span>
++        <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight md:text-[40px]">{title}</h2>
++        {lead && <p className="mx-auto mt-4 max-w-[640px] text-[17px] leading-relaxed text-muted">{lead}</p>}
++      </div>
++      {children}
++    </section>
++  );
++}
++
++export default function Home() {
+   return (
+     <div className="min-h-screen">
+-      <PublicHeader />
+-      <section className="mx-auto flex max-w-[1240px] flex-col items-center gap-[18px] px-8 pb-8 pt-12 text-center">
+-        <span className="pill bg-org-tint text-[13px] text-org-ink">SOC 2 · ISO 27001 · FedRAMP 20x · PCI DSS 4.0 · HIPAA · DPDP</span>
+-        <h1 className="max-w-[880px] text-[40px] font-bold leading-[1.05] tracking-tight md:text-[56px]">
+-          One network for everyone in the audit
++      <PublicHeader nav />
++
++      {/* Hero */}
++      <section className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-6 pb-16 pt-14 text-center md:px-8 md:pt-20">
++        <span className="pill bg-org-tint px-3 py-1.5 text-[12px] tracking-[0.12em] text-org-ink">{SITE.tagline}</span>
++        <h1 className="max-w-[900px] text-[40px] font-bold leading-[1.05] tracking-tight md:text-[60px]">
++          Run every audit in one place, with everyone who works on it
+         </h1>
+-        <p className="m-0 max-w-[700px] text-lg leading-relaxed text-muted">
+-          Companies get audit-ready. Auditors run fieldwork. Consultants manage every client. Same controls, same
+-          evidence, one engagement room.
++        <p className="m-0 max-w-[720px] text-lg leading-relaxed text-muted">
++          AuditOps connects the company being audited, its auditors and its consultants. Same controls, same evidence, one
++          engagement room, and each party sees only what it should.
+         </p>
++        <div className="flex flex-wrap justify-center gap-3">
++          <Link href="/signup" className="btnp min-h-12 px-6 text-[15px]">Get started free</Link>
++          <a href="#how" className="btn min-h-12 px-6 text-[15px]">See how it works</a>
++        </div>
++        <div className="mt-2 flex max-w-[860px] flex-wrap justify-center gap-2">
++          {FRAMEWORKS.map((f) => (
++            <span key={f} className="pill border border-line bg-white px-3 py-1.5 text-label">{f}</span>
++          ))}
++        </div>
++        <div className="mt-10 w-full"><ProductPreview /></div>
+       </section>
+-      <section className="mx-auto max-w-[1240px] px-8 pb-16 pt-2">
+-        <h2 className="mb-5 text-center text-[22px] font-bold">Join as</h2>
++
++      {/* Proof points (facts about the product, not customer metrics) */}
++      <section className="border-y border-line bg-white">
++        <div className="mx-auto grid max-w-[1240px] gap-6 px-6 py-10 text-center md:grid-cols-4 md:px-8">
++          {[
++            ["9", "frameworks in the catalog"],
++            ["1", "control library shared across them"],
++            ["3", "parties in every engagement room"],
++            ["0", "edits allowed to the audit trail"],
++          ].map(([n, l]) => (
++            <div key={l}>
++              <div className="font-display text-[40px] font-bold text-org">{n}</div>
++              <div className="text-sm text-muted">{l}</div>
++            </div>
++          ))}
++        </div>
++      </section>
++
++      {/* Roles */}
++      <Section id="roles" eyebrow="BUILT FOR EVERY SIDE OF THE AUDIT" title="One platform, three workspaces" lead="Choose how you join. You can belong to several workspaces with one account.">
+         <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+-          {ROLE_CARDS.map((r) => (
+-            <div key={r.kind} className="card flex flex-col gap-3 p-7">
+-              <span className="font-display text-[22px] font-bold">{r.title}</span>
+-              <span className="text-[15px] leading-normal text-muted">{r.desc}</span>
+-              <ul className="m-0 list-none p-0 text-sm leading-7 text-label">
++          {ROLES.map((r) => (
++            <div key={r.kind} className="card flex flex-col gap-4 p-7">
++              <span className={`pill self-start ${r.tint}`}>{r.title}</span>
++              <p className="m-0 text-[15px] leading-relaxed text-muted">{r.desc}</p>
++              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-label">
+                 {r.points.map((p) => (
+-                  <li key={p}>{p}</li>
++                  <li key={p} className="flex gap-2"><Check />{p}</li>
++                ))}
++              </ul>
++              <Link href={`/signup?as=${r.kind}`} className="btnp mt-auto" style={{ background: r.color }}>{r.cta}</Link>
++            </div>
++          ))}
++        </div>
++      </Section>
++
++      {/* Features */}
++      <div className="bg-white">
++        <Section id="features" eyebrow="FEATURES" title="Everything an audit needs, nothing it doesn't" lead="From the first control to the final report, the work and the evidence stay in one place.">
++          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
++            {FEATURES.map((f, i) => (
++              <div key={f.title} className="rounded-card border border-line bg-canvas p-6">
++                <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-org-tint font-display text-sm font-bold text-org-ink">
++                  {String(i + 1).padStart(2, "0")}
++                </span>
++                <h3 className="text-[17px] font-bold">{f.title}</h3>
++                <p className="m-0 mt-2 text-sm leading-relaxed text-muted">{f.body}</p>
++              </div>
++            ))}
++          </div>
++        </Section>
++      </div>
++
++      {/* How it works */}
++      <Section id="how" eyebrow="HOW IT WORKS" title="From sign-up to report in four steps">
++        <ol className="m-0 grid list-none gap-5 p-0 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
++          {STEPS.map(([t, b], i) => (
++            <li key={t} className="card relative flex flex-col gap-2 p-6">
++              <span className="font-display text-sm font-bold text-org">Step {i + 1}</span>
++              <h3 className="text-[17px] font-bold">{t}</h3>
++              <p className="m-0 text-sm leading-relaxed text-muted">{b}</p>
++            </li>
++          ))}
++        </ol>
++      </Section>
++
++      {/* Security */}
++      <div className="bg-ink text-white">
++        <section id="security" className="mx-auto max-w-[1240px] scroll-mt-24 px-6 py-20 md:px-8">
++          <div className="mb-12 max-w-[720px]">
++            <span className="text-xs font-semibold tracking-[0.14em] text-[#9DB0F5]">SECURITY</span>
++            <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight md:text-[40px]">Built for the data auditors look at</h2>
++            <p className="mt-4 text-[17px] leading-relaxed text-slate-300">
++              A compliance platform has to pass its own audit. These protections are on for every workspace.
++            </p>
++          </div>
++          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
++            {SECURITY.map(([t, b]) => (
++              <div key={t} className="rounded-card border border-white/10 bg-white/5 p-6">
++                <h3 className="text-[17px] font-bold">{t}</h3>
++                <p className="m-0 mt-2 text-sm leading-relaxed text-slate-300">{b}</p>
++              </div>
++            ))}
++          </div>
++        </section>
++      </div>
++
++      {/* Pricing */}
++      <Section id="pricing" eyebrow="PRICING" title="Start free. Pay as your compliance grows." lead="Every plan includes the shared control library, two-step verification and the audit trail.">
++        <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))]">
++          {PLANS.map((p) => (
++            <div
++              key={p.name}
++              className={`relative flex flex-col gap-4 rounded-card border bg-white p-6 ${p.highlight ? "border-org shadow-[0_16px_40px_-20px_rgba(43,74,203,0.5)]" : "border-line"}`}
++            >
++              {p.highlight && <span className="pill absolute -top-3 left-6 bg-org text-white">Most popular</span>}
++              <div>
++                <h3 className="text-xl font-bold">{p.name}</h3>
++                <p className="m-0 mt-1 text-sm text-muted">{p.audience}</p>
++              </div>
++              <div>
++                <span className="font-display text-[32px] font-bold">{p.price ?? "Talk to us"}</span>
++                {p.price && p.price !== "Free" && p.period && <span className="text-sm text-muted"> {p.period}</span>}
++                {!p.price && p.period && <div className="text-xs text-muted">Priced {p.period}</div>}
++              </div>
++              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-label">
++                {p.features.map((f) => (
++                  <li key={f} className="flex gap-2"><Check />{f}</li>
+                 ))}
+               </ul>
+-              <Link href={`/signup?as=${r.kind}`} className="btnp mt-auto" style={{ background: r.color }}>
+-                {r.cta}
+-              </Link>
++              <div className="mt-auto flex flex-col gap-2">
++                <Link href={p.cta.href} className={p.highlight ? "btnp" : "btn"}>{p.cta.label}</Link>
++                {!p.price && (
++                  <a href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`AuditOps ${p.name} pricing`)}`} className="text-center text-xs font-semibold text-org hover:underline">
++                    Get a quote
++                  </a>
++                )}
++              </div>
+             </div>
+           ))}
+         </div>
++        <p className="mt-6 text-center text-sm text-muted">
++          Need SSO, data residency or a custom contract?{" "}
++          <a href={`mailto:${SITE.contactEmail}?subject=AuditOps%20Enterprise`} className="font-semibold text-org hover:underline">Contact us about Enterprise</a>.
++        </p>
++      </Section>
++
++      {/* FAQ */}
++      <div className="bg-white">
++        <Section id="faq" eyebrow="FAQ" title="Questions, answered">
++          <div className="mx-auto flex max-w-[820px] flex-col gap-3">
++            {FAQ.map(([q, a]) => (
++              <details key={q} className="group rounded-card border border-line bg-canvas px-5 py-4 open:bg-white">
++                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-semibold">
++                  {q}
++                  <span className="text-xl leading-none text-muted transition group-open:rotate-45">+</span>
++                </summary>
++                <p className="m-0 mt-3 text-sm leading-relaxed text-muted">{a}</p>
++              </details>
++            ))}
++          </div>
++        </Section>
++      </div>
++
++      {/* Final CTA */}
++      <section className="mx-auto max-w-[1240px] px-6 py-20 md:px-8">
++        <div className="flex flex-col items-center gap-5 rounded-[20px] bg-org px-6 py-14 text-center text-white">
++          <h2 className="max-w-[720px] text-[30px] font-bold leading-tight md:text-[38px]">Bring your next audit into one room</h2>
++          <p className="m-0 max-w-[560px] text-[17px] text-white/80">Set up your workspace in minutes. Invite your team, your auditor and your consultants when you are ready.</p>
++          <div className="flex flex-wrap justify-center gap-3">
++            <Link href="/signup" className="btn min-h-12 border-white px-6 text-[15px] text-org">Get started free</Link>
++            <a href={`mailto:${SITE.contactEmail}?subject=AuditOps%20demo`} className="btnp min-h-12 border border-white/40 bg-transparent px-6 text-[15px]">Book a demo</a>
++          </div>
++        </div>
+       </section>
++
++      {/* Footer */}
++      <footer className="border-t border-line bg-white">
++        <div className="mx-auto grid max-w-[1240px] gap-10 px-6 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-8">
++          <div className="flex flex-col gap-3">
++            <Logo tagline />
++            <p className="m-0 max-w-[320px] text-sm leading-relaxed text-muted">
++              Organizations, auditors and consultants running audits together.
++            </p>
++          </div>
++          <div className="flex flex-col gap-2 text-sm">
++            <span className="font-semibold">Product</span>
++            <a href="#features" className="text-muted hover:text-ink">Features</a>
++            <a href="#security" className="text-muted hover:text-ink">Security</a>
++            <a href="#pricing" className="text-muted hover:text-ink">Pricing</a>
++            <a href="#faq" className="text-muted hover:text-ink">FAQ</a>
++          </div>
++          <div className="flex flex-col gap-2 text-sm">
++            <span className="font-semibold">Get started</span>
++            <Link href="/signup?as=organization" className="text-muted hover:text-ink">For organizations</Link>
++            <Link href="/signup?as=auditor" className="text-muted hover:text-ink">For auditors</Link>
++            <Link href="/signup?as=provider" className="text-muted hover:text-ink">For service providers</Link>
++            <Link href="/signin" className="text-muted hover:text-ink">Sign in</Link>
++          </div>
++          <div className="flex flex-col gap-2 text-sm">
++            <span className="font-semibold">Company</span>
++            <a href={`mailto:${SITE.contactEmail}`} className="text-muted hover:text-ink">Contact</a>
++            <a href={`mailto:${SITE.contactEmail}?subject=Security`} className="text-muted hover:text-ink">Report a security issue</a>
++          </div>
++        </div>
++        <div className="border-t border-line">
++          <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-3 px-6 py-5 text-xs text-muted md:px-8">
++            <span>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</span>
++            <span className="tracking-[0.12em]">{SITE.tagline}</span>
++          </div>
++        </div>
++      </footer>
+     </div>
+   );
+ }
+diff --git a/components/app/forms.tsx b/components/app/forms.tsx
+index e359ec0..5b1237d 100644
+--- a/components/app/forms.tsx
++++ b/components/app/forms.tsx
+@@ -138,7 +138,7 @@ export function InviteForm({ roles }: { roles: { value: string; label: string }[
+ 
+ export function GrantProviderForm({ providers }: { providers: { id: string; name: string }[] }) {
+   const { state, pending, onSubmit, ref, action } = useServerForm(grantProviderAction, { resetOnOk: true });
+-  if (!providers.length) return <p className="m-0 text-sm text-muted">No service providers on AuditMesh yet.</p>;
++  if (!providers.length) return <p className="m-0 text-sm text-muted">No service providers on AuditOps yet.</p>;
+   return (
+     <form ref={ref} action={action} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+       <label className="lbl min-w-[240px] flex-1">
+diff --git a/components/auth/oauth-buttons.tsx b/components/auth/oauth-buttons.tsx
+index cd50853..9fa7655 100644
+--- a/components/auth/oauth-buttons.tsx
++++ b/components/auth/oauth-buttons.tsx
+@@ -3,7 +3,7 @@ import { providersEnabled } from "@/lib/env";
+ /**
+  * Google / Microsoft sign-in. These are plain links to the server-side start
+  * route: the provider runs its own bot and risk checks, so Turnstile guards
+- * only the forms AuditMesh processes itself (password, sign-up, reset).
++ * only the forms AuditOps processes itself (password, sign-up, reset).
+  */
+ export function OAuthButtons({ next }: { next?: string }) {
+   const list = [
+diff --git a/components/brand.tsx b/components/brand.tsx
+index 55efc1a..9df1e92 100644
+--- a/components/brand.tsx
++++ b/components/brand.tsx
+@@ -1,26 +1,45 @@
+ import Link from "next/link";
++import { SITE } from "@/lib/site";
+ 
+-export function Logo({ href = "/" }: { href?: string }) {
++export function LogoMark({ size = 28 }: { size?: number }) {
++  return (
++    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden="true">
++      <rect x="1" y="1" width="26" height="26" rx="7" fill="#2B4ACB" />
++      <path d="M8 14.5l3.8 3.8L20 10" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
++    </svg>
++  );
++}
++
++export function Logo({ href = "/", tagline = false }: { href?: string; tagline?: boolean }) {
+   return (
+     <Link href={href} className="flex items-center gap-2.5 text-ink no-underline">
+-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#2B4ACB" strokeWidth="2" aria-hidden="true">
+-        <circle cx="7" cy="7" r="4" />
+-        <circle cx="21" cy="7" r="4" />
+-        <circle cx="14" cy="21" r="4" />
+-        <path d="M10 9l3 8M18 9l-3 8M11 7h6" />
+-      </svg>
+-      <span className="font-display text-xl font-bold">AuditMesh</span>
++      <LogoMark />
++      <span className="flex flex-col leading-none">
++        <span className="font-display text-xl font-bold">{SITE.name}</span>
++        {tagline && <span className="mt-1 text-[9.5px] font-semibold tracking-[0.14em] text-muted">{SITE.tagline}</span>}
++      </span>
+     </Link>
+   );
+ }
+ 
+-export function PublicHeader() {
++export function PublicHeader({ nav = false }: { nav?: boolean }) {
+   return (
+-    <header className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-8 py-[22px]">
+-      <Logo />
+-      <div className="flex flex-wrap gap-3">
+-        <Link href="/signin" className="btn">Sign in</Link>
+-        <Link href="/signup" className="btnp">Get started</Link>
++    <header className="sticky top-0 z-40 border-b border-transparent bg-canvas/85 backdrop-blur supports-[backdrop-filter]:bg-canvas/70">
++      <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-6 py-4 md:px-8">
++        <Logo tagline />
++        {nav && (
++          <nav aria-label="Site" className="hidden items-center gap-7 text-sm font-semibold text-label lg:flex">
++            <a href="#features" className="hover:text-ink">Features</a>
++            <a href="#how" className="hover:text-ink">How it works</a>
++            <a href="#security" className="hover:text-ink">Security</a>
++            <a href="#pricing" className="hover:text-ink">Pricing</a>
++            <a href="#faq" className="hover:text-ink">FAQ</a>
++          </nav>
++        )}
++        <div className="flex flex-wrap gap-3">
++          <Link href="/signin" className="btn">Sign in</Link>
++          <Link href="/signup" className="btnp">Get started</Link>
++        </div>
+       </div>
+     </header>
+   );
+diff --git a/lib/auth/flow.ts b/lib/auth/flow.ts
+index 73747b9..3cbd3c3 100644
+--- a/lib/auth/flow.ts
++++ b/lib/auth/flow.ts
+@@ -50,8 +50,8 @@ export async function sendVerificationEmail(user: Pick<User, "id" | "email" | "n
+   const link = `${env.appUrl}/verify-email/confirm?token=${token}`;
+   await sendEmail(
+     user.email,
+-    "Confirm your AuditMesh email",
+-    `Hi ${user.name},\n\nConfirm your email address to finish setting up AuditMesh:\n${link}\n\nThe link expires in 24 hours.`
++    "Confirm your AuditOps email",
++    `Hi ${user.name},\n\nConfirm your email address to finish setting up AuditOps:\n${link}\n\nThe link expires in 24 hours.`
+   );
+ }
+ 
+diff --git a/lib/auth/mfa.ts b/lib/auth/mfa.ts
+index 758a7c7..43ff7ff 100644
+--- a/lib/auth/mfa.ts
++++ b/lib/auth/mfa.ts
+@@ -8,7 +8,7 @@ export function newTotpSecret() {
+ }
+ 
+ export function totpUri(email: string, secret: Uint8Array) {
+-  return createTOTPKeyURI("AuditMesh", email, secret, 30, 6);
++  return createTOTPKeyURI("AuditOps", email, secret, 30, 6);
+ }
+ 
+ export function sealSecret(secret: Uint8Array) {
+diff --git a/lib/context.ts b/lib/context.ts
+index 60027e2..2450e43 100644
+--- a/lib/context.ts
++++ b/lib/context.ts
+@@ -92,7 +92,7 @@ export const getContext = cache(async (): Promise<AppContext | null> => {
+   }
+ 
+   const actorLabel = support
+-    ? `${user.name} (AuditMesh support)`
++    ? `${user.name} (AuditOps support)`
+     : actingFrom
+       ? `${actingFrom.name} on behalf of ${tenant?.name}`
+       : `${user.name}${tenant ? ` · ${tenant.name}` : ""}`;
+diff --git a/lib/crypto.ts b/lib/crypto.ts
+index 4b86113..18f466d 100644
+--- a/lib/crypto.ts
++++ b/lib/crypto.ts
+@@ -11,6 +11,7 @@ export function sha256(value: string): string {
+ }
+ 
+ function key(purpose: string) {
++  // Legacy label from the AuditMesh name: changing it would invalidate stored MFA secrets.
+   return createHmac("sha256", authSecret()).update(`auditmesh:${purpose}`).digest();
+ }
+ 
+diff --git a/lib/env.ts b/lib/env.ts
+index 8ac410f..2ae5b84 100644
+--- a/lib/env.ts
++++ b/lib/env.ts
+@@ -15,7 +15,7 @@ export const env = {
+   turnstileSecret: process.env.TURNSTILE_SECRET_KEY || "",
+   turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "",
+   resendKey: process.env.RESEND_API_KEY || "",
+-  emailFrom: process.env.EMAIL_FROM || "AuditMesh <no-reply@example.com>",
++  emailFrom: process.env.EMAIL_FROM || "AuditOps <no-reply@example.com>",
+ };
+ 
+ export const providersEnabled = {
+diff --git a/lib/permissions.ts b/lib/permissions.ts
+index 6b457b2..71e6d94 100644
+--- a/lib/permissions.ts
++++ b/lib/permissions.ts
+@@ -1,5 +1,5 @@
+ /**
+- * AuditMesh access model. Pure functions, safe in any runtime.
++ * AuditOps access model. Pure functions, safe in any runtime.
+  *
+  * Platform: super admin (users.is_super_admin). Created by script only.
+  * Workspace roles (memberships.role): owner > admin > member > viewer.
+diff --git a/lib/site.ts b/lib/site.ts
+new file mode 100644
+index 0000000..5bee7ae
+--- /dev/null
++++ b/lib/site.ts
+@@ -0,0 +1,105 @@
++/**
++ * Marketing site content. Edit here; the homepage reads from this file.
++ * Plan features describe the offer; plan limits are not enforced in the app yet.
++ * Prices: set `price` to a string such as "₹4,999" to publish it. `null`
++ * shows "Talk to us" with a contact link.
++ */
++export const SITE = {
++  name: "AuditOps",
++  tagline: "COMPLIANCE OPERATIONS PLATFORM",
++  contactEmail: "hello@opseros.com",
++};
++
++export type Plan = {
++  name: string;
++  audience: string;
++  price: string | null;
++  period?: string;
++  highlight?: boolean;
++  cta: { label: string; href: string };
++  features: string[];
++};
++
++export const PLANS: Plan[] = [
++  {
++    name: "Starter",
++    audience: "Companies preparing for their first audit",
++    price: "Free",
++    cta: { label: "Start free", href: "/signup?as=organization" },
++    features: [
++      "Pick your frameworks",
++      "Shared control library with readiness score",
++      "Evidence library (10 MB per file)",
++      "Invite your team with roles",
++      "Hire an auditor from the marketplace",
++    ],
++  },
++  {
++    name: "Growth",
++    audience: "Organizations running several frameworks",
++    price: null,
++    period: "per framework / year",
++    highlight: true,
++    cta: { label: "Start free, upgrade later", href: "/signup?as=organization" },
++    features: [
++      "Everything in Starter",
++      "Engagement rooms with your auditors",
++      "Consultant (provider) access with full audit trail",
++      "Two-step verification enforcement",
++      "Priority support",
++    ],
++  },
++  {
++    name: "Audit firm",
++    audience: "CPA firms, ISO registrars, QSAs and 3PAOs",
++    price: null,
++    period: "per seat / month",
++    cta: { label: "Join as auditor", href: "/signup?as=auditor" },
++    features: [
++      "Unlimited client engagements",
++      "Request lists, seeded sampling, findings",
++      "Internal notes and workpapers with sign-off",
++      "Verified marketplace listing and leads",
++    ],
++  },
++  {
++    name: "Service provider",
++    audience: "vCISOs, consultants and MSPs",
++    price: null,
++    period: "per client / month",
++    cta: { label: "Join as provider", href: "/signup?as=provider" },
++    features: [
++      "Multi-client portfolio and readiness view",
++      "Work inside client workspaces, fully logged",
++      "Join your clients' audit rooms",
++      "Marketplace listing",
++    ],
++  },
++];
++
++export const FAQ: [string, string][] = [
++  [
++    "Who is AuditOps for?",
++    "Three groups that work on the same audit: the organization being audited, the audit firm (CPA firm, ISO certification body, PCI QSA or FedRAMP 3PAO), and the consultants who help the organization get ready. Each gets its own workspace, and they meet in a shared engagement room.",
++  ],
++  [
++    "Which frameworks are supported?",
++    "SOC 1, SOC 2, ISO 27001, PCI DSS 4.0, HIPAA, FedRAMP 20x, India's DPDP Act, GDPR and ISO 42001. Controls are shared, so one control can satisfy requirements in several frameworks at once.",
++  ],
++  [
++    "Can our auditor see everything in our workspace?",
++    "No. Auditors see the requests in their engagement and the evidence you attach to them. Your other controls, evidence and team stay private. In the other direction, auditor workpapers and internal notes are never shown to you or your consultants.",
++  ],
++  [
++    "How do consultants get access?",
++    "An admin in your workspace grants a service provider contributor access. They can work on controls, evidence and audit requests, but cannot manage your team or settings. You can revoke access at any time, and every action they take is logged under their firm's name.",
++  ],
++  [
++    "How are audit firms verified?",
++    "Firms appear in the marketplace only after AuditOps checks their credentials against the issuing body, for example AICPA peer review, ISO/IEC 17021-1 accreditation, the PCI SSC QSA listing or A2LA FedRAMP accreditation.",
++  ],
++  [
++    "How do I sign in?",
++    "With your work email and a password, or with Google or Microsoft. Two-step verification with an authenticator app is available for every user and can be made mandatory.",
++  ],
++];
+diff --git a/package.json b/package.json
+index c298db3..0d6cf86 100644
+--- a/package.json
++++ b/package.json
+@@ -1,5 +1,5 @@
+ {
+-  "name": "auditmesh",
++  "name": "auditops",
+   "version": "0.1.0",
+   "private": true,
+   "engines": {
+diff --git a/scripts/create-super-admin.ts b/scripts/create-super-admin.ts
+index bbc80e1..1ac6a64 100644
+--- a/scripts/create-super-admin.ts
++++ b/scripts/create-super-admin.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Creates or promotes an AuditMesh super admin. Super admins are never
++ * Creates or promotes an AuditOps super admin. Super admins are never
+  * created through sign-up.
+  *
+  *   npm run admin:create -- admin@yourco.com "Full Name"
+diff --git a/scripts/seed.ts b/scripts/seed.ts
+index 234f0af..af278ba 100644
+--- a/scripts/seed.ts
++++ b/scripts/seed.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Demo data mirroring the AuditMesh prototype. Development / preview only.
++ * Demo data mirroring the AuditOps prototype. Development / preview only.
+  *   SEED_DEMO_PASSWORD='Demo-pass-2026!' npm run db:seed
+  */
+ import { hash } from "@node-rs/argon2";
+@@ -37,10 +37,10 @@ async function main() {
+   const northstarU = await user("ops@northstar.test", "N. Rao");
+   const meridianU = await user("ops@meridian.test", "M. Grant");
+   const graniteU = await user("ops@granite.test", "G. Lopez");
+-  await user("admin@auditmesh.test", "R. Menon", true);
++  await user("admin@auditops.test", "R. Menon", true);
+ 
+   const nw = await tenant({ name: "Northwind Labs", slug: "northwind-labs", type: "organization", subtype: "51–200", plan: "Growth", frameworks: ["SOC2", "ISO27001", "PCI", "FEDRAMP"] }, priya.id, [[dev.id, "member"]]);
+-  const ll = await tenant({ name: "Ledgerline CPA", slug: "ledgerline-cpa", type: "auditor", subtype: "CPA firm (SOC)", plan: "Firm", frameworks: ["SOC1", "SOC2", "HIPAA"], listed: true, location: "Remote · US", blurb: "SOC reports for SaaS and fintech. Fieldwork runs fully inside AuditMesh.", timeline: "Type I in 4–6 weeks; Type II after 3–12 month window" }, auditorU.id);
++  const ll = await tenant({ name: "Ledgerline CPA", slug: "ledgerline-cpa", type: "auditor", subtype: "CPA firm (SOC)", plan: "Firm", frameworks: ["SOC1", "SOC2", "HIPAA"], listed: true, location: "Remote · US", blurb: "SOC reports for SaaS and fintech. Fieldwork runs fully inside AuditOps.", timeline: "Type I in 4–6 weeks; Type II after 3–12 month window" }, auditorU.id);
+   await tenant({ name: "Northstar Registrar", slug: "northstar-registrar", type: "auditor", subtype: "ISO certification body", plan: "Firm", frameworks: ["ISO27001", "ISO42001"], listed: true, location: "Bengaluru · London", blurb: "Accredited ISO certification. Stage 1 and Stage 2 with surveillance audits.", timeline: "Stage 1 to certificate in 8–12 weeks" }, northstarU.id);
+   await tenant({ name: "Granite QSA", slug: "granite-qsa", type: "auditor", subtype: "PCI QSA company", plan: "Firm", frameworks: ["PCI"], listed: true, location: "Remote · US, EU", blurb: "PCI assessments for e-commerce and payments, including checkout script controls.", timeline: "ROC in 6–10 weeks" }, graniteU.id);
+   const mer = await tenant({ name: "Meridian 3PAO", slug: "meridian-3pao", type: "auditor", subtype: "FedRAMP 3PAO", status: "pending_verification", plan: "Firm", frameworks: ["FEDRAMP"], location: "Washington DC", blurb: "Assessments for 20x Low and Moderate using machine-readable evidence." }, meridianU.id);
+@@ -127,7 +127,7 @@ async function main() {
+ 
+   await db.insert(schema.auditLog).values({ actorLabel: "Seed", action: "seed", summary: "loaded demo data" });
+   console.log("Demo data loaded. Accounts (password = SEED_DEMO_PASSWORD):");
+-  console.log("  priya@northwind.test  (Northwind Labs owner)\n  dev@northwind.test    (Northwind Labs member)\n  riya@ledgerline.test  (Ledgerline CPA owner)\n  asha@brightgate.test  (Brightgate Advisory owner)\n  admin@auditmesh.test  (super admin)");
++  console.log("  priya@northwind.test  (Northwind Labs owner)\n  dev@northwind.test    (Northwind Labs member)\n  riya@ledgerline.test  (Ledgerline CPA owner)\n  asha@brightgate.test  (Brightgate Advisory owner)\n  admin@auditops.test  (super admin)");
+   await pool.end();
+ }
+ 
+diff --git a/tailwind.config.ts b/tailwind.config.ts
+index bbd2ee0..2daaa8d 100644
+--- a/tailwind.config.ts
++++ b/tailwind.config.ts
+@@ -1,6 +1,6 @@
+ import type { Config } from "tailwindcss";
+ 
+-// Tokens taken from the AuditMesh prototype.
++// Tokens taken from the AuditOps prototype.
+ export default {
+   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+   theme: {
+diff --git a/tests/e2e.py b/tests/e2e.py
+index b351eea..8dc7d2e 100644
+--- a/tests/e2e.py
++++ b/tests/e2e.py
+@@ -43,7 +43,7 @@ with sync_playwright() as p:
+ 
+     # 1. landing
+     page.goto(BASE)
+-    check("landing renders", page.locator("h1").inner_text().startswith("One network"))
++    check("landing renders", page.locator("h1").inner_text().startswith("Run every audit"))
+     page.screenshot(path="/home/claude/shots/01-landing.png", full_page=True)
+ 
+     # 2. sign up new organization
+@@ -153,7 +153,7 @@ with sync_playwright() as p:
+     signout(page)
+ 
+     # 6. super admin
+-    signin(page, "admin@auditmesh.test")
++    signin(page, "admin@auditops.test")
+     page.goto(BASE + "/admin/verification")
+     page.click("button:has-text('Approve')")
+     try:
+-- 
+2.43.0
+
