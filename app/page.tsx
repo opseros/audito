@@ -1,342 +1,324 @@
 import Link from "next/link";
-import { Logo, SiteHeader } from "@/components/brand";
-import { CONNECTS, FAQ, SITE } from "@/lib/site";
+import { Logo, PublicHeader } from "@/components/brand";
+import { FAQ, PLANS, SITE } from "@/lib/site";
 import { LiveDemo } from "@/components/site/live-demo";
-import { HeroMock } from "@/components/site/hero-mock";
-import { Pricing } from "@/components/site/pricing";
-import { Reveal } from "@/components/site/motion";
+import { CountUp, Reveal } from "@/components/site/motion";
 
 export const metadata = { title: "AuditOps · Compliance Operations Platform" };
 
-const INK = "#0F172A"; // dark sections use the app ink colour
+const FRAMEWORKS = ["SOC 2", "SOC 1", "ISO 27001", "PCI DSS 4.0", "HIPAA", "FedRAMP 20x", "DPDP (India)", "GDPR", "ISO 42001"];
 
-const AUDIENCES = [
+const ROLES = [
   {
-    eyebrow: "ORGANIZATIONS",
-    title: "Get audit-ready, stay audit-ready",
-    body: "For companies working toward SOC 2, ISO 27001, PCI DSS, HIPAA or DPDP, and keeping it after the report.",
-    points: ["Readiness score per framework", "One control covers many frameworks", "Evidence library linked to controls", "Hire verified auditors and consultants"],
-    cta: ["Start as organization", "/signup?as=organization"],
-    dark: false,
+    kind: "organization",
+    title: "Organizations",
+    desc: "Getting certified. Track every control across frameworks, collect evidence once, and answer auditor requests in one place.",
+    points: ["Readiness score per framework", "One control, many frameworks", "Hire auditors and consultants"],
+    cta: "Start as organization",
+    color: "#2B4ACB",
+    tint: "bg-org-tint text-org-ink",
   },
   {
-    eyebrow: "AUDIT FIRMS",
-    title: "Run fieldwork in one room per client",
-    body: "For CPA firms, ISO certification bodies, PCI QSAs and FedRAMP 3PAOs.",
-    points: ["Request lists with accept / rework", "Seeded, locked sampling", "Workpapers and internal notes, firm only", "Verified listing and inbound leads"],
-    cta: ["Start as audit firm", "/signup?as=auditor"],
-    dark: true,
+    kind: "auditor",
+    title: "Auditors & certification bodies",
+    desc: "CPA firms, ISO registrars, QSAs and 3PAOs. Run fieldwork, sample populations, review evidence and issue findings.",
+    points: ["Request lists and seeded sampling", "Workpapers with reviewer sign-off", "Verified listing and leads"],
+    cta: "Start as auditor",
+    color: "#0F6B5C",
+    tint: "bg-auditor-tint text-auditor-ink",
   },
   {
-    eyebrow: "SERVICE PROVIDERS",
-    title: "Every client, one console",
-    body: "For vCISOs, compliance consultants and MSPs who get clients ready and see them through the audit.",
-    points: ["Portfolio readiness across clients", "Work inside client workspaces, logged", "Join clients' audit rooms", "Listed in the marketplace"],
-    cta: ["Start as provider", "/signup?as=provider"],
-    dark: false,
+    kind: "provider",
+    title: "Service providers",
+    desc: "vCISOs, consultants and MSPs. Manage every client from one console and work inside their workspace with logged access.",
+    points: ["Multi-client portfolio", "Contributor access granted by the client", "Join clients' audit rooms"],
+    cta: "Start as provider",
+    color: "#B4500F",
+    tint: "bg-provider-tint text-provider-ink",
   },
 ];
 
 const FEATURES = [
-  ["Shared control library", "Each control maps to every framework it satisfies. Fix it once and readiness moves everywhere it counts.", "M4 6h16M4 12h16M4 18h10", "bg-org-tint text-org"],
-  ["Live readiness", "See how close each framework is to audit-ready, which controls fail, and who owns them.", "M5 19V9M12 19V5M19 19v-7", "bg-auditor-tint text-auditor"],
-  ["Engagement rooms", "Company, auditor and consultant in one room: requests, threads, evidence, findings and a timeline.", "M4 5h16v11H8l-4 4z", "bg-provider-tint text-provider"],
-  ["Sampling built in", "Draw a seeded random sample from a population. Seed and items are locked and reproducible.", "M5 5h4v4H5zM15 5h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4z", "bg-admin-tint text-admin"],
-  ["Workpapers & internal notes", "Auditor-only notes and workpapers with reviewer sign-off. Clients and consultants never see them.", "M7 3h7l5 5v13H7zM14 3v5h5", "bg-warn-tint text-warn"],
-  ["Verified marketplace", "Find audit firms whose credentials were checked, and request proposals with your readiness attached.", "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z", "bg-org-tint text-org"],
+  { title: "Shared control library", body: "Each control maps to requirements in every framework you follow. Fix it once and readiness moves everywhere it counts." },
+  { title: "Live readiness scores", body: "See how close each framework is to audit-ready, which controls are failing, and who owns them." },
+  { title: "Evidence library", body: "Upload evidence once, link it to controls, and attach it to auditor requests. Every download is logged." },
+  { title: "Engagement rooms", body: "One room per audit for the company, its auditor and its consultant: requests, threads, evidence, findings and a timeline." },
+  { title: "Sampling built in", body: "Auditors draw a seeded random sample from a population. The seed and items are locked and reproducible." },
+  { title: "Workpapers and internal notes", body: "Auditor-only notes and workpapers with reviewer sign-off. Clients and consultants never see them." },
+  { title: "Consultant access, done safely", body: "Grant a provider contributor access. They work in your workspace under their own name and you can revoke it any time." },
+  { title: "Verified marketplace", body: "Find audit firms whose credentials were checked against the issuing body, and request proposals with your readiness attached." },
+  { title: "Append-only audit trail", body: "Sign-ins, changes, support sessions and decisions are recorded. The database refuses edits and deletes." },
 ];
 
 const STEPS = [
-  ["Create your workspace", "Sign up with your work email, Google or Microsoft as an organization, audit firm or service provider."],
-  ["Pick your frameworks", "AuditOps sets up the shared control library. Assign owners, collect evidence, watch readiness climb."],
-  ["Bring in your auditor", "Request a proposal from a verified firm or invite yours. Run the audit in one engagement room."],
+  ["Create your workspace", "Sign up as an organization, audit firm or service provider and pick your frameworks."],
+  ["Get ready", "Work through the shared control library, assign owners and collect evidence."],
+  ["Bring in your auditor", "Request proposals from verified firms, or invite the firm you already work with."],
+  ["Run the audit in one room", "Requests, evidence, sampling and findings happen in one place, with every party's view kept apart."],
 ];
 
 const SECURITY = [
-  ["A private workspace per company.", "Each party sees only its own data and the rooms it belongs to."],
-  ["Strong sign-in.", "Passwords hashed with argon2id, Google or Microsoft sign-in, two-step verification, Cloudflare Turnstile."],
-  ["Least privilege.", "Owner, admin, member and viewer roles. Consultants get contributor access only, revocable any time."],
-  ["Append-only audit trail.", "Sign-ins, changes and decisions are recorded, and the database refuses edits and deletes."],
-  ["Read-only support.", "AuditOps staff can view a workspace only in a logged, read-only session with a stated reason."],
+  ["Sign-in your way", "Work email and password, Google or Microsoft. Two-step verification with an authenticator app, mandatory if you choose."],
+  ["Bot protection", "Cloudflare Turnstile on sign-in, sign-up and password reset, plus rate limits on repeated attempts."],
+  ["Strong credentials", "Passwords hashed with argon2id. Session tokens stored only as hashes, revocable per device."],
+  ["Least privilege", "Owner, admin, member and viewer roles. Consultants get contributor access only. Every check runs on the server."],
+  ["Tenant isolation", "Each party sees only its own data and the engagement rooms it belongs to. Internal auditor notes stay with the auditor."],
+  ["Read-only support", "AuditOps staff can view a workspace only in a read-only session with a stated reason, recorded in the audit trail."],
 ];
 
-function Tick({ light = false }: { light?: boolean }) {
+function Check() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-0.5 flex-none">
-      <path d="M3.5 8.5l3 3 6-7" stroke={light ? "#9DB0F5" : "#0F6B5C"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.5 8.5l3 3 6-7" stroke="#0F6B5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function Heading({ eyebrow, title, lead, center = true }: { eyebrow: string; title: string; lead?: string; center?: boolean }) {
+function Section({ id, eyebrow, title, lead, children }: { id?: string; eyebrow: string; title: string; lead?: string; children: React.ReactNode }) {
   return (
-    <Reveal className={center ? "mx-auto mb-12 max-w-[680px] text-center" : "mb-8"}>
-      <span className="text-[11px] font-bold tracking-[0.16em] text-org">{eyebrow}</span>
-      <h2 className="mt-3 text-[30px] font-bold leading-tight tracking-tight md:text-[38px]">{title}</h2>
-      {lead && <p className="mx-auto mt-3 max-w-[600px] text-[16px] leading-relaxed text-muted">{lead}</p>}
-    </Reveal>
+    <section id={id} className="mx-auto max-w-[1240px] scroll-mt-24 px-6 py-20 md:px-8">
+      <Reveal className="mx-auto mb-12 max-w-[720px] text-center">
+        <span className="text-xs font-semibold tracking-[0.14em] text-org">{eyebrow}</span>
+        <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight md:text-[40px]">{title}</h2>
+        {lead && <p className="mx-auto mt-4 max-w-[640px] text-[17px] leading-relaxed text-muted">{lead}</p>}
+      </Reveal>
+      <Reveal delay={120}>{children}</Reveal>
+    </section>
   );
 }
 
 export default function Home() {
   return (
-    <div className="min-h-screen overflow-x-clip bg-white">
-      <SiteHeader />
+    <div className="min-h-screen overflow-x-clip">
+      <PublicHeader nav />
 
-      {/* ---------------------------------------------------------------- hero */}
+      {/* Hero */}
       <section className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_70%_at_60%_30%,black,transparent)]" />
-        <div aria-hidden className="pointer-events-none absolute -top-40 right-0 h-[560px] w-[760px] animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(43,74,203,0.22),transparent)]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-40 left-0 h-[420px] w-[560px] animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(15,107,92,0.12),transparent)]" />
-        <div className="relative mx-auto grid max-w-[1180px] items-center gap-12 px-6 pb-24 pt-16 lg:grid-cols-[1fr_1.05fr] lg:pt-24">
-          <div className="flex animate-fade-up flex-col items-start gap-6">
-            <span className="pill bg-org-tint px-3 py-1.5 text-[11px] tracking-[0.14em] text-org-ink">{SITE.tagline}</span>
-            <h1 className="text-[42px] font-bold leading-[1.04] tracking-tight md:text-[58px]">
-              Every audit,
-              <br />
-              <span className="bg-gradient-to-r from-org via-[#5B4BD6] to-auditor bg-clip-text text-transparent">one room.</span>
-            </h1>
-            <p className="m-0 max-w-[520px] text-[17px] leading-relaxed text-muted">
-              AuditOps brings the company being audited, its auditor and its consultants into one platform. Track every
-              control across frameworks, collect evidence once, and run fieldwork in a shared engagement room where each
-              party sees only what it should.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className="btnp min-h-12 px-6 text-[15px] shadow-[0_10px_30px_-10px_rgba(43,74,203,0.7)]">
-                Start free
-              </Link>
-              <a href="#demo" className="btn min-h-12 px-6 text-[15px]">Try the live demo</a>
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+        <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[520px] w-[900px] -translate-x-1/2 animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(43,74,203,0.22),transparent)]" />
+        <div className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-6 pb-10 pt-14 text-center md:px-8 md:pt-20">
+          <span className="pill animate-fade-up bg-org-tint px-3 py-1.5 text-[12px] tracking-[0.12em] text-org-ink">{SITE.tagline}</span>
+          <h1 className="max-w-[920px] animate-fade-up text-[40px] font-bold leading-[1.04] tracking-tight [animation-delay:80ms] md:text-[62px]">
+            Run every audit in one place, with{" "}
+            <span className="bg-gradient-to-r from-org via-[#5B4BD6] to-auditor bg-clip-text text-transparent">everyone who works on it</span>
+          </h1>
+          <p className="m-0 max-w-[720px] animate-fade-up text-lg leading-relaxed text-muted [animation-delay:160ms]">
+            AuditOps connects the company being audited, its auditors and its consultants. Same controls, same evidence, one
+            engagement room, and each party sees only what it should.
+          </p>
+          <div className="flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:240ms]">
+            <Link href="/signup" className="btnp min-h-12 px-6 text-[15px] shadow-[0_10px_30px_-10px_rgba(43,74,203,0.7)]">Get started free</Link>
+            <a href="#demo" className="btn min-h-12 px-6 text-[15px]">Try the live demo ↓</a>
+          </div>
+          <div className="mt-2 flex max-w-[860px] animate-fade-up flex-wrap justify-center gap-2 [animation-delay:320ms]">
+            {FRAMEWORKS.map((f) => (
+              <span key={f} className="pill border border-line bg-white px-3 py-1.5 text-label">{f}</span>
+            ))}
+          </div>
+        </div>
+        <div id="demo" className="scroll-mt-24 px-4 pb-16 md:px-8">
+          <div className="animate-fade-up [animation-delay:400ms]">
+            <LiveDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* Proof points (facts about the product, not customer metrics) */}
+      <section className="border-y border-line bg-white">
+        <div className="mx-auto grid max-w-[1240px] gap-6 px-6 py-10 text-center md:grid-cols-4 md:px-8">
+          {([
+            [9, "frameworks in the catalog"],
+            [1, "control library shared across them"],
+            [3, "parties in every engagement room"],
+            [0, "edits allowed to the audit trail"],
+          ] as const).map(([n, l]) => (
+            <div key={l}>
+              <div className="font-display text-[40px] font-bold tabular-nums text-org"><CountUp to={n} /></div>
+              <div className="text-sm text-muted">{l}</div>
             </div>
-            <span className="text-xs text-muted">Free to create a workspace · no card needed · sign up with Google or Microsoft</span>
-          </div>
-          <div className="flex animate-fade-up justify-center [animation-delay:150ms] lg:justify-end">
-            <HeroMock />
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ------------------------------------------------------- frameworks + connects */}
-      <section className="border-b border-line bg-canvas">
-        <div className="mx-auto max-w-[1180px] px-6 py-16">
-          <Heading eyebrow="FRAMEWORKS & SOURCES" title="One control library, every framework" lead="Nine frameworks share one set of controls. Upload evidence from any tool today; direct connectors are on the roadmap." />
-          <Reveal className="mb-8 flex flex-wrap justify-center gap-2">
-            {["SOC 2", "SOC 1", "ISO 27001", "PCI DSS 4.0", "HIPAA", "FedRAMP 20x", "DPDP (India)", "GDPR", "ISO 42001"].map((f) => (
-              <span key={f} className="rounded-full border border-org/20 bg-white px-3.5 py-1.5 text-[13px] font-semibold text-org-ink">{f}</span>
-            ))}
-          </Reveal>
-          <Reveal delay={100} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CONNECTS.map((c) => (
-              <div key={c.group} className="rounded-xl border border-line bg-white p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-[0.14em] text-muted">{c.group.toUpperCase()}</span>
-                  <span className="text-[10px] font-semibold text-muted">Roadmap</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {c.tools.map((t) => (
-                    <span key={t} className="flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[13px]">
-                      <span className="flex h-5 w-5 items-center justify-center rounded bg-hair text-[10px] font-bold text-label">{t[0]}</span>
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ---------------------------------------------------------------- who */}
-      <section id="who" className="mx-auto max-w-[1180px] scroll-mt-20 px-6 py-20">
-        <Heading eyebrow="WHO IT'S FOR" title="Built for every side of the audit" lead="One account can belong to several workspaces. Start on your own side and invite the others when you are ready." />
-        <Reveal delay={100} className="grid gap-5 lg:grid-cols-3">
-          {AUDIENCES.map((a) => (
-            <div
-              key={a.eyebrow}
-              className={`flex flex-col gap-4 rounded-2xl p-7 transition duration-300 hover:-translate-y-1 ${
-                a.dark ? "text-white shadow-[0_24px_60px_-28px_rgba(15,23,42,0.8)]" : "border border-line bg-white"
-              }`}
-              style={a.dark ? { background: INK } : undefined}
-            >
-              <span className={`text-[11px] font-bold tracking-[0.14em] ${a.dark ? "text-[#9DB0F5]" : "text-org"}`}>{a.eyebrow}</span>
-              <h3 className="text-[21px] font-bold leading-snug">{a.title}</h3>
-              <p className={`m-0 text-sm leading-relaxed ${a.dark ? "text-slate-300" : "text-muted"}`}>{a.body}</p>
-              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-                {a.points.map((p) => (
-                  <li key={p} className={`flex gap-2 ${a.dark ? "text-slate-200" : "text-label"}`}>
-                    <Tick light={a.dark} />
-                    {p}
-                  </li>
+      {/* Roles */}
+      <Section id="roles" eyebrow="BUILT FOR EVERY SIDE OF THE AUDIT" title="One platform, three workspaces" lead="Choose how you join. You can belong to several workspaces with one account.">
+        <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          {ROLES.map((r) => (
+            <div key={r.kind} className="card flex flex-col gap-4 p-7 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-24px_rgba(15,23,42,0.35)]">
+              <span className={`pill self-start ${r.tint}`}>{r.title}</span>
+              <p className="m-0 text-[15px] leading-relaxed text-muted">{r.desc}</p>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-label">
+                {r.points.map((p) => (
+                  <li key={p} className="flex gap-2"><Check />{p}</li>
                 ))}
               </ul>
-              <Link
-                href={a.cta[1]}
-                className={`mt-auto self-start rounded-lg px-4 py-2.5 text-sm font-bold ${a.dark ? "bg-org text-white" : "text-white"}`}
-                style={a.dark ? undefined : { background: INK }}
-              >
-                {a.cta[0]}
-              </Link>
+              <Link href={`/signup?as=${r.kind}`} className="btnp mt-auto" style={{ background: r.color }}>{r.cta}</Link>
             </div>
           ))}
-        </Reveal>
-      </section>
-
-      {/* ---------------------------------------------------------------- live demo */}
-      <section id="demo" className="scroll-mt-20 border-y border-line bg-canvas">
-        <div className="mx-auto max-w-[1240px] px-4 py-20 md:px-6">
-          <Heading eyebrow="LIVE DEMO" title="Click around a real audit" lead="Fix a failing control, switch to the auditor to review evidence and draw a sample, or step into a client as the consultant." />
-          <Reveal delay={100}>
-            <LiveDemo />
-          </Reveal>
         </div>
-      </section>
+      </Section>
 
-      {/* ---------------------------------------------------------------- features */}
-      <section id="features" className="mx-auto max-w-[1180px] scroll-mt-20 px-6 py-20">
-        <Heading eyebrow="FEATURES" title="Less chasing. More audit-ready." lead="Everything the company, the auditor and the consultant need, in one place." />
-        <Reveal delay={100} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map(([t, b, icon, tone]) => (
-            <div key={t} className="group rounded-2xl border border-line bg-white p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_-26px_rgba(15,23,42,0.4)]">
-              <span className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d={icon} />
-                </svg>
-              </span>
-              <h3 className="text-[17px] font-bold">{t}</h3>
-              <p className="m-0 mt-2 text-sm leading-relaxed text-muted">{b}</p>
-            </div>
-          ))}
-        </Reveal>
-      </section>
-
-      {/* ---------------------------------------------------------------- how */}
-      <section id="how" className="scroll-mt-20 bg-canvas">
-        <div className="mx-auto max-w-[1180px] px-6 py-20">
-          <Heading eyebrow="HOW IT WORKS" title="Set up in minutes" lead="No installs and no IT project. Each company gets its own private workspace." />
-          <Reveal delay={100} className="grid gap-5 md:grid-cols-3">
-            {STEPS.map(([t, b], i) => (
-              <div key={t} className="relative rounded-2xl border border-line bg-white p-6 pt-9">
-                <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: INK }}>
-                  {i + 1}
+      {/* Features */}
+      <div className="bg-white">
+        <Section id="features" eyebrow="FEATURES" title="Everything an audit needs, nothing it doesn't" lead="From the first control to the final report, the work and the evidence stay in one place.">
+          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+            {FEATURES.map((f, i) => (
+              <div key={f.title} className="group rounded-card border border-line bg-canvas p-6 transition duration-300 hover:-translate-y-1 hover:border-org/30 hover:bg-white hover:shadow-[0_18px_40px_-24px_rgba(43,74,203,0.45)]">
+                <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-org-tint font-display text-sm font-bold text-org-ink transition group-hover:bg-org group-hover:text-white">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="text-[17px] font-bold">{t}</h3>
-                <p className="m-0 mt-2 text-sm leading-relaxed text-muted">{b}</p>
+                <h3 className="text-[17px] font-bold">{f.title}</h3>
+                <p className="m-0 mt-2 text-sm leading-relaxed text-muted">{f.body}</p>
               </div>
             ))}
-          </Reveal>
-        </div>
-      </section>
+          </div>
+        </Section>
+      </div>
 
-      {/* ---------------------------------------------------------------- security */}
-      <section id="security" className="mx-auto grid max-w-[1180px] scroll-mt-20 items-start gap-10 px-6 py-20 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <Heading eyebrow="SECURITY & PRIVACY" title="Your audit data stays yours" lead="A compliance platform has to pass its own audit. These protections are on for every workspace." center={false} />
-          <Reveal delay={100}>
-            <ul className="m-0 flex list-none flex-col gap-4 p-0">
-              {SECURITY.map(([t, b]) => (
-                <li key={t} className="flex gap-3 text-[15px] leading-relaxed">
-                  <Tick />
-                  <span><strong>{t}</strong> <span className="text-muted">{b}</span></span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-        <Reveal delay={150}>
-          <div className="rounded-2xl p-7 text-white shadow-[0_30px_70px_-30px_rgba(15,23,42,0.8)]" style={{ background: INK }}>
-            <h3 className="text-xl font-bold">Start free today</h3>
-            <p className="m-0 mt-1 text-sm text-slate-300">Create a workspace for your company, your firm or your clients.</p>
-            <dl className="m-0 mt-6 divide-y divide-white/10 text-sm">
-              {[
-                ["Workspace", "Free to create"],
-                ["Frameworks", "9 in the catalog"],
-                ["Sign-in", "Email, Google, Microsoft"],
-                ["Two-step verification", "Included"],
-                ["Audit trail", "Append-only"],
-              ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 py-3">
-                  <dt className="text-slate-300">{k}</dt>
-                  <dd className="m-0 font-semibold text-[#9DB0F5]">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <Link href="/signup" className="mt-6 block rounded-lg bg-org py-3 text-center text-sm font-bold text-white hover:brightness-110">
-              Start free
-            </Link>
-            <p className="m-0 mt-3 text-xs text-slate-400">
-              Need a security review or DPA?{" "}
-              <a className="font-semibold text-white underline" href={`mailto:${SITE.contactEmail}?subject=AuditOps%20security%20review`}>Talk to us</a>.
+      {/* How it works */}
+      <Section id="how" eyebrow="HOW IT WORKS" title="From sign-up to report in four steps">
+        <ol className="m-0 grid list-none gap-5 p-0 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+          {STEPS.map(([t, b], i) => (
+            <li key={t} className="card relative flex flex-col gap-2 p-6">
+              <span className="font-display text-sm font-bold text-org">Step {i + 1}</span>
+              <h3 className="text-[17px] font-bold">{t}</h3>
+              <p className="m-0 text-sm leading-relaxed text-muted">{b}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/* Security */}
+      <div className="bg-ink text-white">
+        <section id="security" className="mx-auto max-w-[1240px] scroll-mt-24 px-6 py-20 md:px-8">
+          <div className="mb-12 max-w-[720px]">
+            <span className="text-xs font-semibold tracking-[0.14em] text-[#9DB0F5]">SECURITY</span>
+            <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight md:text-[40px]">Built for the data auditors look at</h2>
+            <p className="mt-4 text-[17px] leading-relaxed text-slate-300">
+              A compliance platform has to pass its own audit. These protections are on for every workspace.
             </p>
           </div>
-        </Reveal>
-      </section>
+          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+            {SECURITY.map(([t, b]) => (
+              <div key={t} className="rounded-card border border-white/10 bg-white/5 p-6">
+                <h3 className="text-[17px] font-bold">{t}</h3>
+                <p className="m-0 mt-2 text-sm leading-relaxed text-slate-300">{b}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
 
-      {/* ---------------------------------------------------------------- pricing */}
-      <section id="pricing" className="scroll-mt-20 bg-canvas">
-        <div className="mx-auto max-w-[1180px] px-6 py-20">
-          <Heading eyebrow="PRICING" title="Simple plans for every side" lead="Creating a workspace is free. Upgrade when your audit needs it." />
-          <Reveal delay={100}>
-            <Pricing />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ---------------------------------------------------------------- faq */}
-      <section id="faq" className="mx-auto max-w-[820px] scroll-mt-20 px-6 py-20">
-        <Heading eyebrow="FAQ" title="Questions" />
-        <Reveal delay={100} className="divide-y divide-line border-y border-line">
-          {FAQ.map(([q, a]) => (
-            <details key={q} className="group py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold">
-                {q}
-                <span className="text-lg leading-none text-muted transition group-open:rotate-45">+</span>
-              </summary>
-              <p className="m-0 mt-3 text-sm leading-relaxed text-muted">{a}</p>
-            </details>
+      {/* Pricing */}
+      <Section id="pricing" eyebrow="PRICING" title="Start free. Pay as your compliance grows." lead="Every plan includes the shared control library, two-step verification and the audit trail.">
+        <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))]">
+          {PLANS.map((p) => (
+            <div
+              key={p.name}
+              className={`relative flex h-full flex-col gap-4 rounded-card border bg-white p-6 transition duration-300 hover:-translate-y-1 ${p.highlight ? "border-org shadow-[0_16px_40px_-20px_rgba(43,74,203,0.5)]" : "border-line"}`}
+            >
+              {p.highlight && <span className="pill absolute -top-3 left-6 bg-org text-white">Most popular</span>}
+              <div className="min-h-[72px]">
+                <h3 className="text-xl font-bold">{p.name}</h3>
+                <p className="m-0 mt-1 text-sm text-muted">{p.audience}</p>
+              </div>
+              <div className="min-h-[64px]">
+                <span className="font-display text-[32px] font-bold">{p.price ?? "Talk to us"}</span>
+                {p.price && p.price !== "Free" && p.period && <span className="text-sm text-muted"> {p.period}</span>}
+                {!p.price && p.period && <div className="text-xs text-muted">Priced {p.period}</div>}
+              </div>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-label">
+                {p.features.map((f) => (
+                  <li key={f} className="flex gap-2"><Check />{f}</li>
+                ))}
+              </ul>
+              {/* Fixed-height footer so every plan's button lines up. */}
+              <div className="mt-auto flex flex-col gap-2 pt-2">
+                <Link href={p.cta.href} className={p.highlight ? "btnp" : "btn"}>{p.cta.label}</Link>
+                <span className="flex h-4 items-center justify-center text-xs">
+                  {p.price ? (
+                    <span className="text-muted">No card required</span>
+                  ) : (
+                    <a href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`AuditOps ${p.name} pricing`)}`} className="font-semibold text-org hover:underline">
+                      Get a quote
+                    </a>
+                  )}
+                </span>
+              </div>
+            </div>
           ))}
-        </Reveal>
-      </section>
+        </div>
+        <p className="mt-6 text-center text-sm text-muted">
+          Need SSO, data residency or a custom contract?{" "}
+          <a href={`mailto:${SITE.contactEmail}?subject=AuditOps%20Enterprise`} className="font-semibold text-org hover:underline">Contact us about Enterprise</a>.
+        </p>
+      </Section>
 
-      {/* ---------------------------------------------------------------- cta */}
-      <section className="mx-auto max-w-[1180px] px-6 pb-20">
-        <div className="relative flex flex-col items-center gap-5 overflow-hidden rounded-[20px] bg-org px-6 py-16 text-center text-white">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_50%_0%,rgba(255,255,255,0.18),transparent_70%)]" />
-          <h2 className="relative text-[30px] font-bold leading-tight md:text-[40px]">Put your next audit in one room</h2>
-          <p className="relative m-0 max-w-[560px] text-[16px] text-white/80">Controls, evidence, requests and findings, shared by the company, its auditor and its consultants.</p>
-          <div className="relative flex flex-wrap justify-center gap-3">
-            <Link href="/signup?as=organization" className="btn min-h-12 border-white px-5 text-org">Start as organization</Link>
-            <Link href="/signup?as=auditor" className="btnp min-h-12 border border-white/40 bg-transparent px-5">Join as auditor</Link>
-            <Link href="/signin" className="btnp min-h-12 border border-white/40 bg-transparent px-5">Log in</Link>
+      {/* FAQ */}
+      <div className="bg-white">
+        <Section id="faq" eyebrow="FAQ" title="Questions, answered">
+          <div className="mx-auto flex max-w-[820px] flex-col gap-3">
+            {FAQ.map(([q, a]) => (
+              <details key={q} className="group rounded-card border border-line bg-canvas px-5 py-4 open:bg-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-semibold">
+                  {q}
+                  <span className="text-xl leading-none text-muted transition group-open:rotate-45">+</span>
+                </summary>
+                <p className="m-0 mt-3 text-sm leading-relaxed text-muted">{a}</p>
+              </details>
+            ))}
+          </div>
+        </Section>
+      </div>
+
+      {/* Final CTA */}
+      <section className="mx-auto max-w-[1240px] px-6 py-20 md:px-8">
+        <div className="flex flex-col items-center gap-5 rounded-[20px] bg-org px-6 py-14 text-center text-white">
+          <h2 className="max-w-[720px] text-[30px] font-bold leading-tight md:text-[38px]">Bring your next audit into one room</h2>
+          <p className="m-0 max-w-[560px] text-[17px] text-white/80">Set up your workspace in minutes. Invite your team, your auditor and your consultants when you are ready.</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/signup" className="btn min-h-12 border-white px-6 text-[15px] text-org">Get started free</Link>
+            <a href={`mailto:${SITE.contactEmail}?subject=AuditOps%20demo`} className="btnp min-h-12 border border-white/40 bg-transparent px-6 text-[15px]">Book a demo</a>
           </div>
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- footer */}
-      <footer className="border-t border-line bg-white text-muted">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs">
-          <div className="flex items-center gap-4">
-            <Logo />
-            <span>© {new Date().getFullYear()} Opseros. {SITE.name} {SITE.by}.</span>
+      {/* Footer */}
+      <footer className="border-t border-line bg-white">
+        <div className="mx-auto grid max-w-[1240px] gap-10 px-6 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-8">
+          <div className="flex flex-col gap-3">
+            <Logo tagline />
+            <p className="m-0 max-w-[320px] text-sm leading-relaxed text-muted">
+              Organizations, auditors and consultants running audits together.
+            </p>
           </div>
-          <nav aria-label="Footer" className="flex flex-wrap gap-5">
-            <a href="#pricing" className="hover:text-ink">Pricing</a>
-            <a href="#security" className="hover:text-ink">Security</a>
-            <Link href="/signin" className="hover:text-ink">Log in</Link>
-            <Link href="/signup" className="hover:text-ink">Sign up</Link>
-            <a href={`mailto:${SITE.contactEmail}`} className="hover:text-ink">Contact</a>
-          </nav>
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="font-semibold">Product</span>
+            <a href="#features" className="text-muted hover:text-ink">Features</a>
+            <a href="#security" className="text-muted hover:text-ink">Security</a>
+            <a href="#pricing" className="text-muted hover:text-ink">Pricing</a>
+            <a href="#faq" className="text-muted hover:text-ink">FAQ</a>
+          </div>
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="font-semibold">Get started</span>
+            <Link href="/signup?as=organization" className="text-muted hover:text-ink">For organizations</Link>
+            <Link href="/signup?as=auditor" className="text-muted hover:text-ink">For auditors</Link>
+            <Link href="/signup?as=provider" className="text-muted hover:text-ink">For service providers</Link>
+            <Link href="/signin" className="text-muted hover:text-ink">Sign in</Link>
+          </div>
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="font-semibold">Company</span>
+            <a href={`mailto:${SITE.contactEmail}`} className="text-muted hover:text-ink">Contact</a>
+            <a href={`mailto:${SITE.contactEmail}?subject=Security`} className="text-muted hover:text-ink">Report a security issue</a>
+          </div>
+        </div>
+        <div className="border-t border-line">
+          <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-3 px-6 py-5 text-xs text-muted md:px-8">
+            <span>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</span>
+            <span className="tracking-[0.12em]">{SITE.tagline}</span>
+          </div>
         </div>
       </footer>
-
-      {/* Floating contact */}
-      <a
-        href={`mailto:${SITE.contactEmail}?subject=AuditOps%20question`}
-        aria-label="Contact AuditOps"
-        className="fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-org text-white shadow-[0_12px_30px_-8px_rgba(43,74,203,0.7)] transition hover:scale-105"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 5h16v11H8l-4 4z" />
-        </svg>
-      </a>
     </div>
   );
 }

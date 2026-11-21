@@ -43,7 +43,7 @@ with sync_playwright() as p:
 
     # 1. landing
     page.goto(BASE)
-    check("landing renders", page.locator("h1").inner_text().startswith("Every audit"))
+    check("landing renders", page.locator("h1").inner_text().startswith("Run every audit"))
     page.screenshot(path="/home/claude/shots/01-landing.png", full_page=True)
 
     # 2. sign up new organization
