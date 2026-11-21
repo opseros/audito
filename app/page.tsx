@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Logo, PublicHeader } from "@/components/brand";
 import { FAQ, PLANS, SITE } from "@/lib/site";
+import { LiveDemo } from "@/components/site/live-demo";
+import { CountUp, Reveal } from "@/components/site/motion";
 
 export const metadata = { title: "AuditOps · Compliance Operations Platform" };
 
@@ -72,66 +74,15 @@ function Check() {
   );
 }
 
-function ProductPreview() {
-  const fws = [
-    ["SOC 2", 86, "bg-auditor"],
-    ["ISO 27001", 64, "bg-org"],
-    ["PCI DSS 4.0", 41, "bg-provider"],
-  ] as const;
-  const reqs = [
-    ["Change tickets sample", "CC8.1", "Needs rework", "bg-danger-tint text-danger"],
-    ["Quarterly access review", "CC6.2", "Accepted", "bg-auditor-tint text-auditor-ink"],
-    ["Population: new hires", "CC1.4", "Submitted", "bg-org-tint text-org-ink"],
-  ] as const;
-  return (
-    <div className="relative mx-auto w-full max-w-[1040px]" aria-hidden="true">
-      <div className="absolute -inset-x-6 -bottom-6 -top-6 -z-10 rounded-[28px] bg-gradient-to-b from-org-tint/80 via-white to-transparent" />
-      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_60px_-20px_rgba(15,23,42,0.25)]">
-        <div className="flex items-center gap-2 border-b border-line px-4 py-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-line" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line" />
-          <span className="ml-3 text-xs text-muted">Northwind Labs · Audit readiness</span>
-        </div>
-        <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr]">
-          <div className="flex flex-col gap-3">
-            {fws.map(([name, pct, color]) => (
-              <div key={name} className="rounded-xl border border-line p-4 text-left">
-                <div className="flex justify-between text-sm font-semibold"><span>{name}</span><span className="font-display text-lg">{pct}%</span></div>
-                <div className="mt-2 h-2 overflow-hidden rounded bg-line"><div className={`h-2 rounded ${color}`} style={{ width: `${pct}%` }} /></div>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-xl border border-line p-4 text-left">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-bold">Engagement room · SOC 2 Type II</span>
-              <span className="pill bg-auditor text-white">Fieldwork</span>
-            </div>
-            {reqs.map(([t, c, s, cls]) => (
-              <div key={t} className="flex items-center justify-between gap-3 border-t border-hair py-2.5">
-                <span className="flex flex-col"><span className="text-sm font-semibold">{t}</span><span className="text-xs text-muted">{c}</span></span>
-                <span className={`pill ${cls}`}>{s}</span>
-              </div>
-            ))}
-            <div className="mt-2 flex gap-3 rounded-lg bg-auditor-soft p-3 text-xs text-auditor-ink">
-              <span className="font-bold">Internal note</span> Visible to the audit firm only.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Section({ id, eyebrow, title, lead, children }: { id?: string; eyebrow: string; title: string; lead?: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mx-auto max-w-[1240px] scroll-mt-24 px-6 py-20 md:px-8">
-      <div className="mx-auto mb-12 max-w-[720px] text-center">
+      <Reveal className="mx-auto mb-12 max-w-[720px] text-center">
         <span className="text-xs font-semibold tracking-[0.14em] text-org">{eyebrow}</span>
         <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight md:text-[40px]">{title}</h2>
         {lead && <p className="mx-auto mt-4 max-w-[640px] text-[17px] leading-relaxed text-muted">{lead}</p>}
-      </div>
-      {children}
+      </Reveal>
+      <Reveal delay={120}>{children}</Reveal>
     </section>
   );
 }
@@ -142,38 +93,47 @@ export default function Home() {
       <PublicHeader nav />
 
       {/* Hero */}
-      <section className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-6 pb-16 pt-14 text-center md:px-8 md:pt-20">
-        <span className="pill bg-org-tint px-3 py-1.5 text-[12px] tracking-[0.12em] text-org-ink">{SITE.tagline}</span>
-        <h1 className="max-w-[900px] text-[40px] font-bold leading-[1.05] tracking-tight md:text-[60px]">
-          Run every audit in one place, with everyone who works on it
-        </h1>
-        <p className="m-0 max-w-[720px] text-lg leading-relaxed text-muted">
-          AuditOps connects the company being audited, its auditors and its consultants. Same controls, same evidence, one
-          engagement room, and each party sees only what it should.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link href="/signup" className="btnp min-h-12 px-6 text-[15px]">Get started free</Link>
-          <a href="#how" className="btn min-h-12 px-6 text-[15px]">See how it works</a>
+      <section className="relative overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
+        <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[520px] w-[900px] -translate-x-1/2 animate-glow rounded-full bg-[radial-gradient(closest-side,rgba(43,74,203,0.22),transparent)]" />
+        <div className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-6 pb-10 pt-14 text-center md:px-8 md:pt-20">
+          <span className="pill animate-fade-up bg-org-tint px-3 py-1.5 text-[12px] tracking-[0.12em] text-org-ink">{SITE.tagline}</span>
+          <h1 className="max-w-[920px] animate-fade-up text-[40px] font-bold leading-[1.04] tracking-tight [animation-delay:80ms] md:text-[62px]">
+            Run every audit in one place, with{" "}
+            <span className="bg-gradient-to-r from-org via-[#5B4BD6] to-auditor bg-clip-text text-transparent">everyone who works on it</span>
+          </h1>
+          <p className="m-0 max-w-[720px] animate-fade-up text-lg leading-relaxed text-muted [animation-delay:160ms]">
+            AuditOps connects the company being audited, its auditors and its consultants. Same controls, same evidence, one
+            engagement room, and each party sees only what it should.
+          </p>
+          <div className="flex animate-fade-up flex-wrap justify-center gap-3 [animation-delay:240ms]">
+            <Link href="/signup" className="btnp min-h-12 px-6 text-[15px] shadow-[0_10px_30px_-10px_rgba(43,74,203,0.7)]">Get started free</Link>
+            <a href="#demo" className="btn min-h-12 px-6 text-[15px]">Try the live demo ↓</a>
+          </div>
+          <div className="mt-2 flex max-w-[860px] animate-fade-up flex-wrap justify-center gap-2 [animation-delay:320ms]">
+            {FRAMEWORKS.map((f) => (
+              <span key={f} className="pill border border-line bg-white px-3 py-1.5 text-label">{f}</span>
+            ))}
+          </div>
         </div>
-        <div className="mt-2 flex max-w-[860px] flex-wrap justify-center gap-2">
-          {FRAMEWORKS.map((f) => (
-            <span key={f} className="pill border border-line bg-white px-3 py-1.5 text-label">{f}</span>
-          ))}
+        <div id="demo" className="scroll-mt-24 px-4 pb-16 md:px-8">
+          <div className="animate-fade-up [animation-delay:400ms]">
+            <LiveDemo />
+          </div>
         </div>
-        <div className="mt-10 w-full"><ProductPreview /></div>
       </section>
 
       {/* Proof points (facts about the product, not customer metrics) */}
       <section className="border-y border-line bg-white">
         <div className="mx-auto grid max-w-[1240px] gap-6 px-6 py-10 text-center md:grid-cols-4 md:px-8">
-          {[
-            ["9", "frameworks in the catalog"],
-            ["1", "control library shared across them"],
-            ["3", "parties in every engagement room"],
-            ["0", "edits allowed to the audit trail"],
-          ].map(([n, l]) => (
+          {([
+            [9, "frameworks in the catalog"],
+            [1, "control library shared across them"],
+            [3, "parties in every engagement room"],
+            [0, "edits allowed to the audit trail"],
+          ] as const).map(([n, l]) => (
             <div key={l}>
-              <div className="font-display text-[40px] font-bold text-org">{n}</div>
+              <div className="font-display text-[40px] font-bold tabular-nums text-org"><CountUp to={n} /></div>
               <div className="text-sm text-muted">{l}</div>
             </div>
           ))}
@@ -184,7 +144,7 @@ export default function Home() {
       <Section id="roles" eyebrow="BUILT FOR EVERY SIDE OF THE AUDIT" title="One platform, three workspaces" lead="Choose how you join. You can belong to several workspaces with one account.">
         <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
           {ROLES.map((r) => (
-            <div key={r.kind} className="card flex flex-col gap-4 p-7">
+            <div key={r.kind} className="card flex flex-col gap-4 p-7 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-24px_rgba(15,23,42,0.35)]">
               <span className={`pill self-start ${r.tint}`}>{r.title}</span>
               <p className="m-0 text-[15px] leading-relaxed text-muted">{r.desc}</p>
               <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-label">
@@ -203,8 +163,8 @@ export default function Home() {
         <Section id="features" eyebrow="FEATURES" title="Everything an audit needs, nothing it doesn't" lead="From the first control to the final report, the work and the evidence stay in one place.">
           <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
             {FEATURES.map((f, i) => (
-              <div key={f.title} className="rounded-card border border-line bg-canvas p-6">
-                <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-org-tint font-display text-sm font-bold text-org-ink">
+              <div key={f.title} className="group rounded-card border border-line bg-canvas p-6 transition duration-300 hover:-translate-y-1 hover:border-org/30 hover:bg-white hover:shadow-[0_18px_40px_-24px_rgba(43,74,203,0.45)]">
+                <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg bg-org-tint font-display text-sm font-bold text-org-ink transition group-hover:bg-org group-hover:text-white">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-[17px] font-bold">{f.title}</h3>
@@ -255,14 +215,14 @@ export default function Home() {
           {PLANS.map((p) => (
             <div
               key={p.name}
-              className={`relative flex flex-col gap-4 rounded-card border bg-white p-6 ${p.highlight ? "border-org shadow-[0_16px_40px_-20px_rgba(43,74,203,0.5)]" : "border-line"}`}
+              className={`relative flex h-full flex-col gap-4 rounded-card border bg-white p-6 transition duration-300 hover:-translate-y-1 ${p.highlight ? "border-org shadow-[0_16px_40px_-20px_rgba(43,74,203,0.5)]" : "border-line"}`}
             >
               {p.highlight && <span className="pill absolute -top-3 left-6 bg-org text-white">Most popular</span>}
-              <div>
+              <div className="min-h-[72px]">
                 <h3 className="text-xl font-bold">{p.name}</h3>
                 <p className="m-0 mt-1 text-sm text-muted">{p.audience}</p>
               </div>
-              <div>
+              <div className="min-h-[64px]">
                 <span className="font-display text-[32px] font-bold">{p.price ?? "Talk to us"}</span>
                 {p.price && p.price !== "Free" && p.period && <span className="text-sm text-muted"> {p.period}</span>}
                 {!p.price && p.period && <div className="text-xs text-muted">Priced {p.period}</div>}
@@ -272,13 +232,18 @@ export default function Home() {
                   <li key={f} className="flex gap-2"><Check />{f}</li>
                 ))}
               </ul>
-              <div className="mt-auto flex flex-col gap-2">
+              {/* Fixed-height footer so every plan's button lines up. */}
+              <div className="mt-auto flex flex-col gap-2 pt-2">
                 <Link href={p.cta.href} className={p.highlight ? "btnp" : "btn"}>{p.cta.label}</Link>
-                {!p.price && (
-                  <a href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`AuditOps ${p.name} pricing`)}`} className="text-center text-xs font-semibold text-org hover:underline">
-                    Get a quote
-                  </a>
-                )}
+                <span className="flex h-4 items-center justify-center text-xs">
+                  {p.price ? (
+                    <span className="text-muted">No card required</span>
+                  ) : (
+                    <a href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`AuditOps ${p.name} pricing`)}`} className="font-semibold text-org hover:underline">
+                      Get a quote
+                    </a>
+                  )}
+                </span>
               </div>
             </div>
           ))}

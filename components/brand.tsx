@@ -29,6 +29,7 @@ export function PublicHeader({ nav = false }: { nav?: boolean }) {
         <Logo tagline />
         {nav && (
           <nav aria-label="Site" className="hidden items-center gap-7 text-sm font-semibold text-label lg:flex">
+            <a href="#demo" className="hover:text-ink">Live demo</a>
             <a href="#features" className="hover:text-ink">Features</a>
             <a href="#how" className="hover:text-ink">How it works</a>
             <a href="#security" className="hover:text-ink">Security</a>

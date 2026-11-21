@@ -21,3 +21,14 @@
   .tbl td { @apply border-b border-hair px-2 py-3 align-middle; }
   .lnk { @apply cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold hover:underline; }
 }
+
+@layer utilities {
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+  .reveal.is-visible { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
